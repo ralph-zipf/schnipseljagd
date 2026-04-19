@@ -172,6 +172,115 @@
     .sarrow { font-size: 16px; color: var(--text-muted); flex-shrink: 0; }
     .station-card.active  .sarrow { color: var(--teal); }
     .station-card.solved  .sarrow { color: var(--purple); }
+
+    /* ── DETAIL VIEW ── */
+    .detail-wrap { padding: 0 16px 20px; }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--teal); font-family: var(--font-head);
+      font-size: 11px; letter-spacing: 1px;
+      padding: 16px 0 14px; cursor: pointer; width: fit-content;
+    }
+    .detail-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(0,35,45,0.8); border: 1px solid rgba(0,180,200,0.3);
+      border-radius: 20px; padding: 4px 12px;
+      font-family: var(--font-head); font-size: 9px; letter-spacing: 2px;
+      color: var(--teal); margin-bottom: 10px;
+    }
+    .detail-title {
+      font-family: var(--font-head); font-size: 19px; font-weight: 900;
+      color: var(--text); margin-bottom: 3px; line-height: 1.2;
+    }
+    .detail-subtitle { font-size: 13px; color: var(--text-dim); font-style: italic; margin-bottom: 18px; }
+
+    .riddle-box {
+      background: rgba(12,8,24,0.9); border: 1px solid rgba(90,60,150,0.3);
+      border-radius: 10px; padding: 16px; margin-bottom: 14px; position: relative;
+    }
+    .riddle-box::before {
+      content: '« Rätselkarte »';
+      position: absolute; top: -9px; left: 14px;
+      background: var(--bg); padding: 0 7px;
+      font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-muted);
+    }
+    .riddle-text { font-size: 14px; color: #b0a0d0; line-height: 1.75; white-space: pre-wrap; }
+
+    /* Tabs */
+    .tab-row { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+    .tab {
+      padding: 6px 13px; border-radius: 20px;
+      font-family: var(--font-head); font-size: 9px; letter-spacing: 1px;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
+    }
+    .tab.on  { background: rgba(120,50,220,0.18); border-color: rgba(155,80,255,0.45); color: var(--purple); }
+    .tab.off { background: rgba(18,12,32,0.6); border-color: rgba(50,38,80,0.3); color: var(--text-muted); }
+
+    /* Answer section */
+    .answer-section {
+      background: rgba(8,5,18,0.85); border: 1px solid rgba(130,60,220,0.22);
+      border-radius: 10px; padding: 14px; margin-bottom: 12px;
+    }
+    .answer-label { font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 8px; }
+    .answer-input {
+      width: 100%; background: rgba(25,16,48,0.85); border: 1px solid rgba(90,55,170,0.35);
+      border-radius: 7px; padding: 10px 12px; color: var(--text);
+      font-family: var(--font-head); font-size: 15px; letter-spacing: 3px; text-align: center;
+      outline: none; transition: border-color 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .answer-input:focus { border-color: rgba(155,80,255,0.55); }
+    .check-btn {
+      width: 100%; margin-top: 10px;
+      background: linear-gradient(135deg, rgba(90,35,185,0.4), rgba(0,130,155,0.3));
+      border: 1px solid rgba(130,65,240,0.45); border-radius: 9px;
+      padding: 12px; color: var(--purple);
+      font-family: var(--font-head); font-size: 11px; letter-spacing: 2px;
+      cursor: pointer; text-align: center;
+      box-shadow: 0 0 14px rgba(110,50,210,0.14);
+      transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+    }
+    .check-btn:active { transform: scale(0.98); }
+
+    /* Feedback */
+    .feedback {
+      border-radius: 9px; padding: 12px 14px; margin-bottom: 12px;
+      font-size: 13px; line-height: 1.5; display: none;
+    }
+    .feedback.correct { background: rgba(0,100,60,0.25); border: 1px solid rgba(0,200,120,0.3); color: #60e8a8; }
+    .feedback.wrong   { background: rgba(120,20,20,0.25); border: 1px solid rgba(220,60,60,0.3); color: #e88080; }
+    .feedback.show { display: block; }
+
+    /* Hint section */
+    .hint-section { margin-bottom: 12px; }
+    .hint-btn {
+      background: transparent; border: 1px solid rgba(80,55,130,0.3);
+      border-radius: 7px; padding: 8px 14px; color: var(--text-muted);
+      font-family: var(--font-head); font-size: 9px; letter-spacing: 1px;
+      cursor: pointer; transition: all 0.2s; width: 100%; text-align: left;
+    }
+    .hint-text {
+      margin-top: 8px; padding: 10px 12px;
+      background: rgba(40,28,70,0.5); border-radius: 7px;
+      font-size: 12px; color: #9080c0; font-style: italic;
+      display: none;
+    }
+    .hint-text.show { display: block; }
+
+    /* Divider */
+    .divider { height: 1px; background: linear-gradient(90deg,transparent,rgba(90,55,140,0.3),transparent); margin: 14px 0; }
+
+    /* Solved state in detail */
+    .solved-banner {
+      background: rgba(60,20,130,0.25); border: 1px solid rgba(140,70,255,0.35);
+      border-radius: 9px; padding: 14px; text-align: center;
+      color: var(--purple); font-family: var(--font-head); font-size: 12px; letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .next-hint {
+      font-size: 12px; color: var(--text-dim); font-style: italic;
+      text-align: center; padding: 0 8px;
+    }
   </style>
 </head>
 <body>
@@ -422,7 +531,12 @@
         <div id="stationList"></div>
       </div>
     </div>
-    <div id="view-detail" class="view"></div>
+    <div id="view-detail" class="view">
+      <div class="detail-wrap">
+        <div class="back-btn" onclick="renderMain()">‹ Zurück</div>
+        <div id="detailContent"></div>
+      </div>
+    </div>
     <div id="view-org"    class="view"></div>
   </div>
   <script>
@@ -582,6 +696,112 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
     function showView(id) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById('view-' + id).classList.add('active');
+    }
+
+    // ── DETAIL VIEW ─────────────────────────────────────────────
+    function openStation(id) {
+      currentStation = id;
+      renderDetail(id);
+      showView('detail');
+    }
+
+    function renderDetail(id) {
+      const s     = STATIONS.find(x => x.id === id);
+      const solved = state.solved.includes(id);
+      const active = !solved && (id === 1 || state.solved.includes(id - 1));
+
+      const statusLabel = solved ? 'Gelöst ✓' : active ? 'Aktiv' : 'Gesperrt';
+      const badgeColor  = solved
+        ? 'rgba(70,25,160,0.8); border-color:rgba(140,70,255,0.4); color:#c090f8'
+        : 'rgba(0,35,45,0.8); border-color:rgba(0,180,200,0.3); color:#40c8d8';
+
+      document.getElementById('detailContent').innerHTML = `
+        <div class="detail-badge" style="background:${badgeColor}">
+          Station ${id} · ${statusLabel}
+        </div>
+        <div class="detail-title">${s.titel}</div>
+        <div class="detail-subtitle">${s.ort} · ${s.mechanismus}</div>
+
+        <div class="tab-row">
+          <div class="tab on"  id="tabRätsel" onclick="showTab('rätsel')">Rätsel</div>
+          <div class="tab off" id="tabHinweis" onclick="showTab('hinweis')">Hinweis</div>
+        </div>
+
+        <div id="tabContentRätsel">
+          ${solved ? `
+            <div class="solved-banner">◈ Rätsel gelöst ◈</div>
+            <div class="next-hint">${s.nächster_ort ? 'Nächste Station: ' + s.nächster_ort : 'Du hast alle Rätsel gelöst!'}</div>
+          ` : `
+            <div class="riddle-box">
+              <div class="riddle-text">${s.rätseltext}</div>
+            </div>
+            <div class="answer-section">
+              <div class="answer-label">◈ Deine Antwort</div>
+              <input class="answer-input" id="answerInput" type="text" placeholder="· · · · · · · ·"
+                autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+                onkeydown="if(event.key==='Enter') submitAnswer(${id})"/>
+            </div>
+            <div id="feedback" class="feedback"></div>
+            <button class="check-btn" onclick="submitAnswer(${id})">◈ Lösung prüfen</button>
+          `}
+        </div>
+
+        <div id="tabContentHinweis" style="display:none;">
+          <div class="hint-section">
+            <button class="hint-btn" onclick="toggleHint('h1')">💡 Tipp 1 anzeigen</button>
+            <div class="hint-text" id="h1">${s.hinweis}</div>
+          </div>
+          <div class="hint-section">
+            <button class="hint-btn" onclick="toggleHint('h2')">💡 Tipp 2 anzeigen (Spoiler)</button>
+            <div class="hint-text" id="h2">${s.hinweis2}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showTab(tab) {
+      document.getElementById('tabContentRätsel').style.display  = tab === 'rätsel'  ? '' : 'none';
+      document.getElementById('tabContentHinweis').style.display = tab === 'hinweis' ? '' : 'none';
+      document.getElementById('tabRätsel').className  = 'tab ' + (tab === 'rätsel'  ? 'on' : 'off');
+      document.getElementById('tabHinweis').className = 'tab ' + (tab === 'hinweis' ? 'on' : 'off');
+    }
+
+    function toggleHint(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('show');
+    }
+
+    function submitAnswer(id) {
+      const input = document.getElementById('answerInput');
+      if (!input) return;
+      const correct = checkAnswer(id, input.value);
+      const fb = document.getElementById('feedback');
+      if (correct) {
+        fb.className = 'feedback correct show';
+        fb.textContent = '✓ Richtig! Du hast einen Schnipsel gefunden.';
+        if (!state.solved.includes(id)) {
+          state.solved.push(id);
+          saveState();
+        }
+        revealShard(SHARD_MAP[id]);
+        setTimeout(() => renderDetail(id), 1200);
+      } else {
+        fb.className = 'feedback wrong show';
+        fb.textContent = 'Noch nicht ganz… Versuch es nochmal oder schau dir die Tipps an.';
+        input.focus();
+      }
+    }
+
+    function revealShard(shardId) {
+      const el = document.getElementById('sh' + shardId);
+      if (!el || el.classList.contains('visible')) return;
+      el.classList.remove('hidden');
+      el.classList.add('visible');
+      el.style.filter = 'brightness(2.2) drop-shadow(0 0 18px rgba(200,140,255,0.9))';
+      setTimeout(() => { el.style.filter = ''; }, 900);
+      document.getElementById('shardCount').textContent = state.solved.length;
+      const coinDark = document.getElementById('coinDark');
+      if (coinDark && state.solved.length >= 5) coinDark.style.opacity = '0';
     }
 
     // ── HAUPTANSICHT RENDERN ─────────────────────────────────────
