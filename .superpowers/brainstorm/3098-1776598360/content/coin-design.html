@@ -1,0 +1,114 @@
+<style>
+  body-bg { background: #0d0d1a; }
+  .coin-demo { background: linear-gradient(135deg, #0d0d1a, #1a1a2e); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; min-height: 200px; justify-content: center; position: relative; overflow: hidden; }
+  .coin-demo::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(240,192,64,0.08) 0%, transparent 60%); pointer-events: none; }
+  .label-gold { color: #f0c040; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-family: -apple-system, sans-serif; }
+  .label-dim { color: #4a4a6a; font-size: 10px; font-family: -apple-system, sans-serif; }
+
+  /* Puzzle pieces approach */
+  .puzzle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 110px; height: 110px; }
+  .puzzle-piece { border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; font-family: -apple-system, sans-serif; }
+  .piece-solved { background: radial-gradient(circle at 35% 35%, #d4a843, #6b4c10); border: 1px solid #f0c040; color: #0d0d1a; box-shadow: 0 0 8px rgba(240,192,64,0.4); }
+  .piece-open { background: #1e1e38; border: 1px dashed #2a2a4a; color: #2a2a4a; }
+  .piece-center { grid-column: span 2; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+
+  /* Segments approach */
+  .coin-svg-wrap { position: relative; width: 120px; height: 120px; }
+
+  /* Scratch / reveal */
+  .scratch-coin { width: 120px; height: 120px; border-radius: 50%; position: relative; overflow: hidden; border: 3px solid #f0c040; box-shadow: 0 0 20px rgba(240,192,64,0.3); }
+  .scratch-base { position: absolute; inset: 0; background: radial-gradient(circle at 35% 35%, #d4a843, #6b4c10); display: flex; align-items: center; justify-content: center; }
+  .scratch-overlay { position: absolute; inset: 0; background: #1a1a2e; clip-path: polygon(60% 0%, 100% 0%, 100% 40%, 100% 100%, 40% 100%, 0% 100%, 0% 60%, 0% 0%); }
+  .scratch-text { color: #0d0d1a; font-size: 28px; }
+</style>
+
+<h2>Wie baut sich die Münze auf?</h2>
+<p class="subtitle">Jede gelöste Station enthüllt einen Teil des Kurfürst Maximilian</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="puzzle" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; overflow:hidden;">
+      <div class="coin-demo">
+        <div class="label-gold">2 von 5 gelöst</div>
+        <!-- 5-piece puzzle: 2x2 grid + center strip -->
+        <div style="display: grid; grid-template-areas: 'tl tr' 'bl br' 'bot bot'; grid-template-columns: 1fr 1fr; gap: 4px; width: 120px; height: 130px;">
+          <div class="puzzle-piece piece-solved" style="grid-area:tl; border-radius:50% 8px 8px 8px;">K</div>
+          <div class="puzzle-piece piece-solved" style="grid-area:tr; border-radius:8px 50% 8px 8px;">U</div>
+          <div class="puzzle-piece piece-open"   style="grid-area:bl; border-radius:8px 8px 8px 50%;">?</div>
+          <div class="puzzle-piece piece-open"   style="grid-area:br; border-radius:8px 8px 50% 8px;">?</div>
+          <div class="puzzle-piece piece-open"   style="grid-area:bot; border-radius:8px;">?</div>
+        </div>
+        <div class="label-dim">Puzzle-Teile fügen sich zusammen</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Puzzle-Teile</h3>
+      <p>Die Münze besteht aus 5 unregelmäßigen Stücken (wie echte Schnipsel). Pro gelöstem Rätsel rastet ein Stück ein — mit Glanz-Effekt. Am Ende: komplette Münze.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="segments" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden;">
+      <div class="coin-demo">
+        <div class="label-gold">2 von 5 gelöst</div>
+        <div style="position: relative; width: 120px; height: 120px;">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <defs>
+              <radialGradient id="coin-grad" cx="35%" cy="35%">
+                <stop offset="0%" stop-color="#d4a843"/>
+                <stop offset="100%" stop-color="#6b4c10"/>
+              </radialGradient>
+              <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <!-- background circle -->
+            <circle cx="60" cy="60" r="56" fill="#1e1e38" stroke="#2a2a4a" stroke-width="2"/>
+            <!-- segment 1 (solved): top -->
+            <path d="M60,60 L60,4 A56,56 0 0,1 113.4,87 Z" fill="url(#coin-grad)" filter="url(#glow)" opacity="0.9"/>
+            <!-- segment 2 (solved): top-left -->
+            <path d="M60,60 L113.4,87 A56,56 0 0,1 6.6,87 Z" fill="url(#coin-grad)" opacity="0.9"/>
+            <!-- segments 3,4,5 (open) -->
+            <path d="M60,60 L6.6,87 A56,56 0 0,1 30,8.5 Z" fill="#1e1e38" stroke="#2a2a4a" stroke-width="1"/>
+            <path d="M60,60 L30,8.5 A56,56 0 0,1 60,4 Z" fill="#1e1e38" stroke="#2a2a4a" stroke-width="1"/>
+            <!-- center -->
+            <circle cx="60" cy="60" r="20" fill="#0d0d1a" stroke="#f0c040" stroke-width="1.5"/>
+            <text x="60" y="65" text-anchor="middle" fill="#f0c040" font-size="14" font-family="Georgia, serif" font-weight="bold">K</text>
+            <!-- outer ring -->
+            <circle cx="60" cy="60" r="56" fill="none" stroke="#f0c040" stroke-width="1.5" opacity="0.6"/>
+          </svg>
+        </div>
+        <div class="label-dim">Segmente leuchten nacheinander auf</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Kreissegmente</h3>
+      <p>Die Münze ist in 5 Tortenstücke geteilt. Pro Station leuchtet ein Segment golden auf. Das "K" im Zentrum ist von Anfang an sichtbar. Elegant und klar.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="reveal" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden;">
+      <div class="coin-demo">
+        <div class="label-gold">2 von 5 gelöst</div>
+        <div style="position:relative; width:120px; height:120px; border-radius:50%; overflow:hidden; border:3px solid #f0c040; box-shadow: 0 0 20px rgba(240,192,64,0.3);">
+          <!-- base: the coin face -->
+          <div style="position:absolute;inset:0;background:radial-gradient(circle at 35% 35%, #d4a843, #6b4c10);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;">
+            <div style="font-size:9px;color:#3d2800;font-family:Georgia,serif;letter-spacing:1px;font-weight:bold;">MAXIMILIANVS</div>
+            <div style="font-size:32px;">👑</div>
+            <div style="font-size:8px;color:#3d2800;font-family:Georgia,serif;">COMES PALATINI</div>
+          </div>
+          <!-- fog overlay — 40% revealed -->
+          <div style="position:absolute;inset:0;background:linear-gradient(135deg, transparent 0%, transparent 38%, #1a1a2e 42%, #1a1a2e 100%);"></div>
+          <div style="position:absolute;top:6px;right:6px;width:36px;height:36px;border-radius:50%;background:#1a1a2e;opacity:0.85;"></div>
+          <div style="position:absolute;bottom:8px;left:8px;width:30px;height:30px;border-radius:50%;background:#1a1a2e;opacity:0.85;"></div>
+        </div>
+        <div class="label-dim">Nebel lichtet sich Schritt für Schritt</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Nebel-Enthüllung</h3>
+      <p>Die vollständige Münze ist immer da, aber von dunklem "Nebel" verdeckt. Pro Station lichtet sich ein Teil. Dramatischer Effekt — wie ein Bild, das sich langsam zeigt.</p>
+    </div>
+  </div>
+
+</div>

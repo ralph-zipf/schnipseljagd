@@ -1,0 +1,1491 @@
+# Schnipseljagd-App Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Einzelne `index.html` Web-App für eine 5-Stationen-Schatzsuche mit Spieler-Modus (Rätsel lösen, Münz-Puzzle aufbauen) und PIN-geschütztem Organisator-Modus (Lösungen, Checkliste, Druck).
+
+**Architecture:** Single-file SPA. Alles in einer `index.html` (HTML + CSS + JS). Zustand in `localStorage`. Kein Build-Schritt, kein Framework. Deployment via GitHub Pages.
+
+**Tech Stack:** Vanilla HTML/CSS/JS, SVG, Google Fonts (Cinzel), localStorage
+
+---
+
+## Datei-Struktur
+
+```
+index.html          ← gesamte App (HTML + <style> + <script>)
+README.md           ← GitHub Pages Deployment-Anleitung
+```
+
+---
+
+## Task 1: HTML-Grundgerüst + Arcane-Basis-CSS
+
+**Files:**
+- Erstelle: `index.html`
+
+- [ ] **Schritt 1: index.html anlegen**
+
+```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schnipseljagd · 02.05.2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS CUSTOM PROPERTIES ── */
+    :root {
+      --bg:         #07070f;
+      --bg2:        #0e0c1c;
+      --bg3:        #16122a;
+      --border:     rgba(120, 70, 220, 0.22);
+      --border-act: rgba(0, 200, 220, 0.45);
+      --gold:       #d4962c;
+      --gold-light: #f0c060;
+      --purple:     #a070e0;
+      --purple-dim: #5a3898;
+      --teal:       #40c8d8;
+      --text:       #e0d8f8;
+      --text-dim:   #7060a8;
+      --text-muted: #3a2a58;
+      --font-head:  'Cinzel', Georgia, serif;
+      --font-body:  'Crimson Text', Georgia, serif;
+      --r:          12px;
+    }
+
+    /* ── RESET + BASE ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      min-height: 100%;
+      /* Arcane ambient glow */
+      background-image:
+        radial-gradient(ellipse at 25% 15%, rgba(100,50,180,0.13) 0%, transparent 55%),
+        radial-gradient(ellipse at 75% 85%, rgba(0,140,170,0.07) 0%, transparent 50%);
+    }
+
+    /* ── APP SHELL ── */
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 0 80px;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      text-align: center;
+      padding: 28px 20px 16px;
+    }
+    .app-title {
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      background: linear-gradient(120deg, #c890f8 0%, #78c8e8 45%, #e8b040 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .app-date {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-family: var(--font-head);
+    }
+
+    /* ── VIEWS: show/hide ── */
+    .view { display: none; }
+    .view.active { display: block; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="app-title">Schnipseljagd</div>
+      <div class="app-date">02 · Mai · 2026</div>
+    </header>
+
+    <div id="view-main"   class="view active"></div>
+    <div id="view-detail" class="view"></div>
+    <div id="view-org"    class="view"></div>
+  </div>
+  <script>
+    // placeholder — wird in späteren Tasks befüllt
+  </script>
+</body>
+</html>
+```
+
+- [ ] **Schritt 2: Im Browser öffnen und prüfen**
+
+Datei per Doppelklick in Safari/Chrome öffnen.
+Erwartung: schwarzer Hintergrund, Titel "SCHNIPSELJAGD" mit Farbverlauf sichtbar, Datum darunter.
+
+- [ ] **Schritt 3: Commit**
+
+```bash
+cd "/Users/ralphzipf/Library/Mobile Documents/com~apple~CloudDocs/Projekte/Spiele/Schnipseljagt"
+git init
+git add index.html
+git commit -m "feat: HTML scaffold + Arcane base styles"
+```
+
+---
+
+## Task 2: Stations-Daten + Vigenère-Utility
+
+**Files:**
+- Ändere: `index.html` → `<script>` Block
+
+- [ ] **Schritt 1: Daten-Objekt und Hilfsfunktionen in `<script>` einfügen**
+
+Ersetze den Platzhalter-Kommentar im `<script>`-Block durch:
+
+```js
+// ── KONFIGURATION ──────────────────────────────────────────
+const PIN = '1985';
+
+// Scherben-Reihenfolge: Station X enthüllt Scherbe Y (bewusst nicht 1:1)
+// Station: 1→sh3, 2→sh1, 3→sh5, 4→sh2, 5→sh4
+const SHARD_MAP = { 1:3, 2:1, 3:5, 4:2, 5:4 };
+
+const STATIONS = [
+  {
+    id: 1,
+    ort: 'Zuhause',
+    titel: 'Der Geburts-Code',
+    mechanismus: 'Caesar-Chiffre',
+    rätseltext: `Berechne die Quersumme des Jahres, in dem du das Licht der Welt erblicktest.
+Verschiebe jeden Buchstaben dieser Botschaft um diese Zahl Stellen RÜCKWÄRTS im Alphabet (bei A → weiter bei Z):
+
+A · X · Z · E · X · R`,
+    mechanismus_erkl: `Quersumme von 1985 = 1+9+8+5 = 23. Jeden Buchstaben 23 Stellen rückwärts verschieben (= 3 Stellen vorwärts, da 26-23=3).
+A→D, X→A, Z→C … Ergibt DACHAU.`,
+    lösung: 'DACHAU',
+    nächster_ort: 'Dachauer Altstadt, Untermarkt',
+    hinweis: 'Denk an dein Geburtsjahr. Addiere alle vier Ziffern.',
+    hinweis2: 'Die Quersumme von 1985 ist 23. Verschiebe jeden Buchstaben 23 Stellen zurück.',
+  },
+  {
+    id: 2,
+    ort: 'Dachauer Altstadt · Untermarkt',
+    titel: 'Das Wappentier-Telefon',
+    mechanismus: 'Telefontasten-Chiffre',
+    rätseltext: `Das bayerische Wappentier hat 4 Buchstaben — genau wie der Versatz.
+
+Auf einer Telefontastatur gilt: Taste 2 = ABC, 3 = DEF, 4 = GHI, 5 = JKL, 6 = MNO, 7 = PQRS, 8 = TUV, 9 = WXYZ.
+Verschiebe jede Taste um so viele Stellen weiter, wie das Wappentier Buchstaben hat.
+
+4¹ · 5² · 9³ · 7² · 5³ · 7¹ · 5¹ · 7² · 4³ · 2¹`,
+    mechanismus_erkl: `LÖWE = 4 Buchstaben → Versatz 4. Neue Belegung: 2=EFG, 3=HIJ, 4=KLM, 5=NOP, 6=QRS, 7=TUVW, 8=XYZ, 9=ABCD.
+4¹=K, 5²=O, 9³=D, 7²=V→nein: 7=TUVW → 7²=U, 5³=P→nein: 5=NOP → 5³=P... 
+Vollständig: 4¹=K, 5²=O, 9³=D→C: 9=ABCD → 9³=C... Ergibt ZAUNKOENIG → Café Zaunkönig.`,
+    lösung: 'ZAUNKOENIG',
+    nächster_ort: 'Café Zaunkönig, Augsburger Str. 9, Dachau',
+    hinweis: 'Das bayerische Wappentier: ein Tier mit 4 Buchstaben. Diese Zahl verschiebt die Tastatur.',
+    hinweis2: 'LÖWE hat 4 Buchstaben. Taste 2 wird zu EFG, Taste 9 wird zu ABCD. Dann: 4¹ = erster Buchstabe auf Taste 4 = K.',
+  },
+  {
+    id: 3,
+    ort: 'Café Zaunkönig · Augsburger Str. 9',
+    titel: 'Die Kaffeehausbotschaft',
+    mechanismus: 'Steganographie (Anfangsbuchstaben)',
+    rätseltext: `Etwas an diesen Zeilen stimmt nicht. Findest du das Muster?
+
+Alle Wege beginnen mit einem einzigen Schritt,
+manchmal weiß man nicht, wohin er führt,
+plötzlich öffnet sich ein Horizont,
+etwas Neues wartet, das man noch nicht kennt.
+Ruhig fließt das Leben, wie ein Fluss im Frühjahr,
+Brücken bauen wir gemeinsam, Tag für Tag,
+rückblickend sieht man, was man alles schon geschafft,
+und doch liegt noch so viel Schönes vor uns da.
+Ein Augenblick des Glücks – halt ihn fest.
+Charmant und leise flüstert dir der Wind:
+Komm, geh noch einen Schritt mit mir.
+Eines bleibt gewiss: du bist nicht allein.`,
+    mechanismus_erkl: `Die Anfangsbuchstaben jeder Zeile ergeben: A-M-P-E-R-B-R-U-E-C-K-E = AMPERBRUECKE → Amperbrücke Mitterndorf.`,
+    lösung: 'AMPERBRUECKE',
+    nächster_ort: 'Amperbrücke Mitterndorf, Heinrich-Nicolaus-Str.',
+    hinweis: 'Schau dir die Zeilen genau an — nicht was sie bedeuten, sondern wie sie anfangen.',
+    hinweis2: 'Lies nur die ersten Buchstaben jeder Zeile von oben nach unten.',
+  },
+  {
+    id: 4,
+    ort: 'Amperbrücke Mitterndorf',
+    titel: 'Die Zahlensprache',
+    mechanismus: 'Wissensfragen → Zahlen → Alphabet (A=1)',
+    rätseltext: `Beantworte die Fragen. Jede Antwort ist eine Zahl.
+A=1, B=2, C=3 … Z=26. Welches Wort ergibt sich?
+
+1. Wie viele Töne hat eine Dur-Tonleiter?
+2. Wie viele Finger hat eine Hand?
+3. Wie viele Monate hat ein Jahr?
+4. Wie viele Nasen hat ein Mensch?
+5. Wie viele Zehen hat ein Mensch?
+6. Wie viele Minuten hat eine Viertelstunde?`,
+    mechanismus_erkl: `7=G, 5=E, 12=L, 1=A, 20=T, 15=O → GELATO → La Veneziana Eisdiele, Bahnhofstr. 10, Dachau.`,
+    lösung: 'GELATO',
+    nächster_ort: 'La Veneziana Eisdiele, Bahnhofstr. 10, Dachau',
+    hinweis: 'Jede Antwort ist eine Zahl zwischen 1 und 26. A=1, Z=26.',
+    hinweis2: 'Die Antworten: 7, 5, 12, 1, 20, 15. Schau nach, welche Buchstaben diese Zahlen ergeben.',
+  },
+  {
+    id: 5,
+    ort: 'La Veneziana · Bahnhofstr. 10 · Dachau',
+    titel: 'Die Vigenère-Falle',
+    mechanismus: 'Vigenère-Chiffre',
+    rätseltext: `Du hast 4 Orte entdeckt. Du hast 4 Rätsel gelöst.
+Der Schlüssel war die ganze Zeit bei dir.
+
+[GEHEIMTEXT — wird automatisch berechnet]`,
+    mechanismus_erkl: `Schlüssel = Anfangsbuchstaben aller 4 Vorgänger-Lösungen: D(achau) + Z(aunkoenig) + A(mperbruecke) + G(elato) = DZAG.
+Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Geheimtext.`,
+    lösung: 'KURFUERSTMAXIMILIAN',
+    nächster_ort: 'Restaurant Kurfürst Maximilian · La Trattoria by Giovanni, Waisenhausstr. 63, München',
+    hinweis: 'Der Schlüssel besteht aus den Anfangsbuchstaben der 4 Orte, die du bisher besucht hast.',
+    hinweis2: 'DZAG = D(achau) + Z(aunkönig) + A(mperbrücke) + G(elato). Entschlüssle den Text mit diesem Schlüssel.',
+  },
+];
+
+// ── VIGENÈRE UTILITY ─────────────────────────────────────────
+function vigenereEncrypt(plaintext, key) {
+  const pt = plaintext.toUpperCase().replace(/[^A-Z]/g, '');
+  const k  = key.toUpperCase().replace(/[^A-Z]/g, '');
+  return pt.split('').map((ch, i) => {
+    const shift = k.charCodeAt(i % k.length) - 65;
+    return String.fromCharCode((ch.charCodeAt(0) - 65 + shift) % 26 + 65);
+  }).join('');
+}
+
+// Geheimtext für Station 5 automatisch berechnen
+const VIG_KEY        = 'DZAG';
+const VIG_PLAIN      = 'KURFUERSTMAXIMILIAN';
+const VIG_CIPHER     = vigenereEncrypt(VIG_PLAIN, VIG_KEY);
+// Geheimtext in Rätseltext einsetzen
+STATIONS[4].rätseltext = STATIONS[4].rätseltext.replace(
+  '[GEHEIMTEXT — wird automatisch berechnet]',
+  VIG_CIPHER.match(/.{1,4}/g).join(' · ')
+);
+
+// ── ANTWORT-NORMALISIERUNG ───────────────────────────────────
+function normalizeAnswer(str) {
+  return str.toUpperCase()
+    .replace(/Ä/g,'AE').replace(/Ö/g,'OE').replace(/Ü/g,'UE').replace(/ß/g,'SS')
+    .replace(/[^A-Z]/g,'');
+}
+
+function checkAnswer(stationId, input) {
+  const station = STATIONS.find(s => s.id === stationId);
+  return normalizeAnswer(input) === normalizeAnswer(station.lösung);
+}
+```
+
+- [ ] **Schritt 2: Vigenère-Ergebnis in der Browser-Konsole prüfen**
+
+Datei öffnen, Konsole aufrufen (F12 → Console), eingeben:
+```js
+console.log(VIG_CIPHER); // Erwartung: NTRLXDRYWLADLLIRLZN
+```
+
+- [ ] **Schritt 3: Commit**
+
+```bash
+git add index.html
+git commit -m "feat: station data + vigenere utility"
+```
+
+---
+
+## Task 3: Münz-SVG (Kurfürst Maximilian, 5 Scherben)
+
+**Files:**
+- Ändere: `index.html` → `<style>` und `<div id="view-main">`
+
+- [ ] **Schritt 1: Münz-CSS in `<style>` ergänzen**
+
+```css
+/* ── COIN ── */
+.coin-section {
+  padding: 24px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.coin-label {
+  font-family: var(--font-head);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.coin-stage {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  filter: drop-shadow(0 0 22px rgba(150,80,255,0.3))
+          drop-shadow(0 0 6px rgba(200,160,40,0.15));
+}
+.coin-shard {
+  position: absolute;
+  inset: 0;
+  width: 200px;
+  height: 200px;
+  transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
+}
+.coin-shard.hidden  { opacity: 0; filter: brightness(0) blur(3px); transform: scale(0.96); }
+.coin-shard.visible { opacity: 1; filter: none; transform: scale(1); }
+.coin-progress {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+.coin-progress em { color: var(--purple); font-style: normal; font-weight: 600; }
+```
+
+- [ ] **Schritt 2: Münz-HTML in `#view-main` einfügen (erster Block)**
+
+```html
+<div class="coin-section">
+  <div class="coin-label">◈ 5 Schnipsel · 1 Geheimnis ◈</div>
+  <div class="coin-stage" id="coinStage">
+
+    <!-- Dunkler Hintergrund (solange nicht alle enthüllt) -->
+    <svg id="coinDark" viewBox="0 0 200 200" style="position:absolute;inset:0;width:200px;height:200px;z-index:1;pointer-events:none;transition:opacity 0.8s;">
+      <circle cx="100" cy="100" r="97" fill="#080810"/>
+      <circle cx="100" cy="100" r="97" fill="none" stroke="rgba(70,35,120,0.35)" stroke-width="1.5"/>
+    </svg>
+
+    <!-- Scherbe 1 (oben-links) — enthüllt durch Station 2 -->
+    <svg class="coin-shard hidden" id="sh1" viewBox="0 0 200 200">
+      <defs>
+        <clipPath id="cp1"><polygon points="98,94 82,4 0,0 0,200 10,150 30,165 60,183"/></clipPath>
+        <radialGradient id="rg" cx="38%" cy="34%" r="70%">
+          <stop offset="0%"   stop-color="#d4962c"/>
+          <stop offset="40%"  stop-color="#9a6018"/>
+          <stop offset="80%"  stop-color="#5a3008"/>
+          <stop offset="100%" stop-color="#2e1400"/>
+        </radialGradient>
+        <radialGradient id="vign" cx="50%" cy="50%" r="50%">
+          <stop offset="65%" stop-color="transparent"/>
+          <stop offset="100%" stop-color="rgba(50,15,90,0.4)"/>
+        </radialGradient>
+        <filter id="sg"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g clip-path="url(#cp1)">
+        <!-- Münzfläche -->
+        <circle cx="100" cy="100" r="97" fill="url(#rg)"/>
+        <!-- Außenring -->
+        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(205,150,38,0.6)" stroke-width="2.8"/>
+        <circle cx="100" cy="100" r="89" fill="none" stroke="rgba(150,100,24,0.28)" stroke-width="0.8"/>
+        <!-- Inschrift (Kreis-Pfad) -->
+        <path id="rim" d="M 18,100 A 82,82 0 1,1 182,100" fill="none"/>
+        <text font-family="Cinzel,serif" font-size="7.5" fill="rgba(28,12,2,0.72)" letter-spacing="2.8">
+          <textPath href="#rim" startOffset="1%">KVRFVRSTENS · MAXIMILIANS · I · CHVRF · V · BAIERN</textPath>
+        </text>
+        <!-- Sockel -->
+        <rect x="56" y="133" width="88" height="18" rx="2.5" fill="rgba(22,10,2,0.58)"/>
+        <rect x="59" y="134" width="82" height="16" rx="2" fill="none" stroke="rgba(170,120,25,0.3)" stroke-width="0.6"/>
+        <text x="100" y="145" text-anchor="middle" font-family="Cinzel,serif" font-size="5.2" fill="rgba(170,120,18,0.62)" letter-spacing="1.5">ERRICHTET · 1839</text>
+        <!-- Pferd-Körper -->
+        <path d="M 54,124 C 49,114 48,102 52,91 C 56,81 66,74 76,71 C 86,68 98,70 107,75 C 117,81 122,92 121,104 C 120,115 113,124 100,128 C 87,132 63,132 54,124 Z" fill="rgba(20,9,1,0.65)"/>
+        <!-- Hals -->
+        <path d="M 53,99 C 48,89 45,78 43,69 C 41,62 41,56 45,51 C 48,47 53,47 57,51 C 61,55 62,61 64,69 C 66,77 64,88 57,97 Z" fill="rgba(20,9,1,0.63)"/>
+        <!-- Kopf -->
+        <path d="M 45,51 C 41,45 39,38 42,33 C 45,28 51,28 56,32 C 60,36 61,43 59,49 Z" fill="rgba(20,9,1,0.63)"/>
+        <!-- Nasenloch -->
+        <ellipse cx="41" cy="36" rx="2" ry="1.2" fill="rgba(160,110,15,0.32)"/>
+        <!-- Ohr -->
+        <path d="M 53,29 L 50,22 L 57,26 Z" fill="rgba(20,9,1,0.55)"/>
+        <!-- Beine vorne -->
+        <path d="M 60,126 C 54,137 48,150 44,159" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 68,129 C 64,140 62,152 61,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <!-- Angehobenes Vorderbein -->
+        <path d="M 55,113 C 47,107 38,100 32,94 C 30,92 30,88 34,87 C 38,86 41,88 45,93 C 50,99 54,108 60,113" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <!-- Beine hinten -->
+        <path d="M 98,130 C 97,142 95,154 93,163" stroke="rgba(20,9,1,0.58)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 110,126 C 110,138 108,151 107,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <!-- Schweif -->
+        <path d="M 121,104 C 128,98 136,94 141,97 C 145,100 144,107 139,111 C 134,115 126,112 122,107" fill="rgba(20,9,1,0.52)"/>
+        <!-- Reiter-Körper -->
+        <path d="M 74,82 C 71,73 70,63 73,54 C 76,46 83,41 90,43 C 97,45 100,53 98,63 C 96,72 90,80 82,83 Z" fill="rgba(20,9,1,0.68)"/>
+        <!-- Reiter-Umhang -->
+        <path d="M 76,72 C 68,77 64,86 66,94 C 68,100 73,102 77,98" fill="rgba(20,9,1,0.4)"/>
+        <!-- Kopf Reiter -->
+        <circle cx="88" cy="42" r="7.5" fill="rgba(20,9,1,0.68)"/>
+        <!-- Hut / Feder -->
+        <path d="M 83,36 C 81,29 83,23 88,21 C 93,19 97,23 95,29" stroke="rgba(20,9,1,0.62)" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+        <path d="M 95,29 C 99,25 105,23 108,27" stroke="rgba(170,120,18,0.38)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <!-- Erhobener Arm -->
+        <path d="M 93,59 C 99,53 106,47 113,44 C 117,42 119,44 119,47 C 119,50 116,53 111,54 C 105,56 97,60 94,66" fill="none" stroke="rgba(20,9,1,0.65)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="119" cy="46" r="3.5" fill="rgba(20,9,1,0.62)"/>
+        <!-- Hextech Glimmer -->
+        <circle cx="120" cy="46" r="1.2" fill="rgba(170,100,255,0.72)"/>
+        <circle cx="46" cy="35" r="1.5" fill="rgba(140,180,255,0.5)"/>
+        <circle cx="65" cy="73" r="0.8" fill="rgba(170,100,255,0.45)"/>
+        <!-- Vignette -->
+        <circle cx="100" cy="100" r="97" fill="url(#vign)"/>
+      </g>
+      <!-- Scherbenrand-Leuchten -->
+      <polygon points="98,94 82,4 0,0 0,200 10,150 30,165 60,183"
+        fill="none" stroke="rgba(150,80,255,0.5)" stroke-width="1.2"
+        filter="url(#sg)" clip-path="url(#cp1)"/>
+    </svg>
+
+    <!-- Scherbe 2 (oben-Mitte) — enthüllt durch Station 4 -->
+    <svg class="coin-shard hidden" id="sh2" viewBox="0 0 200 200">
+      <defs>
+        <clipPath id="cp2"><polygon points="98,94 82,4 128,2 178,38 148,60"/></clipPath>
+        <filter id="sg2"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g clip-path="url(#cp2)">
+        <circle cx="100" cy="100" r="97" fill="url(#rg)"/>
+        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(205,150,38,0.6)" stroke-width="2.8"/>
+        <circle cx="100" cy="100" r="89" fill="none" stroke="rgba(150,100,24,0.28)" stroke-width="0.8"/>
+        <path id="rim2" d="M 18,100 A 82,82 0 1,1 182,100" fill="none"/>
+        <text font-family="Cinzel,serif" font-size="7.5" fill="rgba(28,12,2,0.72)" letter-spacing="2.8">
+          <textPath href="#rim2" startOffset="1%">KVRFVRSTENS · MAXIMILIANS · I · CHVRF · V · BAIERN</textPath>
+        </text>
+        <rect x="56" y="133" width="88" height="18" rx="2.5" fill="rgba(22,10,2,0.58)"/>
+        <text x="100" y="145" text-anchor="middle" font-family="Cinzel,serif" font-size="5.2" fill="rgba(170,120,18,0.62)" letter-spacing="1.5">ERRICHTET · 1839</text>
+        <path d="M 54,124 C 49,114 48,102 52,91 C 56,81 66,74 76,71 C 86,68 98,70 107,75 C 117,81 122,92 121,104 C 120,115 113,124 100,128 C 87,132 63,132 54,124 Z" fill="rgba(20,9,1,0.65)"/>
+        <path d="M 53,99 C 48,89 45,78 43,69 C 41,62 41,56 45,51 C 48,47 53,47 57,51 C 61,55 62,61 64,69 C 66,77 64,88 57,97 Z" fill="rgba(20,9,1,0.63)"/>
+        <path d="M 45,51 C 41,45 39,38 42,33 C 45,28 51,28 56,32 C 60,36 61,43 59,49 Z" fill="rgba(20,9,1,0.63)"/>
+        <path d="M 60,126 C 54,137 48,150 44,159" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 68,129 C 64,140 62,152 61,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M 55,113 C 47,107 38,100 32,94 C 30,92 30,88 34,87 C 38,86 41,88 45,93 C 50,99 54,108 60,113" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 98,130 C 97,142 95,154 93,163" stroke="rgba(20,9,1,0.58)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 110,126 C 110,138 108,151 107,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M 121,104 C 128,98 136,94 141,97 C 145,100 144,107 139,111 C 134,115 126,112 122,107" fill="rgba(20,9,1,0.52)"/>
+        <path d="M 74,82 C 71,73 70,63 73,54 C 76,46 83,41 90,43 C 97,45 100,53 98,63 C 96,72 90,80 82,83 Z" fill="rgba(20,9,1,0.68)"/>
+        <circle cx="88" cy="42" r="7.5" fill="rgba(20,9,1,0.68)"/>
+        <path d="M 83,36 C 81,29 83,23 88,21 C 93,19 97,23 95,29" stroke="rgba(20,9,1,0.62)" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+        <path d="M 95,29 C 99,25 105,23 108,27" stroke="rgba(170,120,18,0.38)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M 93,59 C 99,53 106,47 113,44 C 117,42 119,44 119,47 C 119,50 116,53 111,54 C 105,56 97,60 94,66" fill="none" stroke="rgba(20,9,1,0.65)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="119" cy="46" r="3.5" fill="rgba(20,9,1,0.62)"/>
+        <circle cx="120" cy="46" r="1.2" fill="rgba(170,100,255,0.72)"/>
+        <circle cx="100" cy="100" r="97" fill="url(#vign)"/>
+      </g>
+      <polygon points="98,94 82,4 128,2 178,38 148,60"
+        fill="none" stroke="rgba(150,80,255,0.5)" stroke-width="1.2"
+        filter="url(#sg2)" clip-path="url(#cp2)"/>
+    </svg>
+
+    <!-- Scherbe 3 (rechts) — enthüllt durch Station 1 -->
+    <svg class="coin-shard hidden" id="sh3" viewBox="0 0 200 200">
+      <defs>
+        <clipPath id="cp3"><polygon points="98,94 148,60 178,38 200,0 200,200 192,132 157,114"/></clipPath>
+        <filter id="sg3"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g clip-path="url(#cp3)">
+        <circle cx="100" cy="100" r="97" fill="url(#rg)"/>
+        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(205,150,38,0.6)" stroke-width="2.8"/>
+        <circle cx="100" cy="100" r="89" fill="none" stroke="rgba(150,100,24,0.28)" stroke-width="0.8"/>
+        <path id="rim3" d="M 18,100 A 82,82 0 1,1 182,100" fill="none"/>
+        <text font-family="Cinzel,serif" font-size="7.5" fill="rgba(28,12,2,0.72)" letter-spacing="2.8">
+          <textPath href="#rim3" startOffset="1%">KVRFVRSTENS · MAXIMILIANS · I · CHVRF · V · BAIERN</textPath>
+        </text>
+        <rect x="56" y="133" width="88" height="18" rx="2.5" fill="rgba(22,10,2,0.58)"/>
+        <text x="100" y="145" text-anchor="middle" font-family="Cinzel,serif" font-size="5.2" fill="rgba(170,120,18,0.62)" letter-spacing="1.5">ERRICHTET · 1839</text>
+        <path d="M 54,124 C 49,114 48,102 52,91 C 56,81 66,74 76,71 C 86,68 98,70 107,75 C 117,81 122,92 121,104 C 120,115 113,124 100,128 C 87,132 63,132 54,124 Z" fill="rgba(20,9,1,0.65)"/>
+        <path d="M 53,99 C 48,89 45,78 43,69 C 41,62 41,56 45,51 C 48,47 53,47 57,51 C 61,55 62,61 64,69 C 66,77 64,88 57,97 Z" fill="rgba(20,9,1,0.63)"/>
+        <path d="M 45,51 C 41,45 39,38 42,33 C 45,28 51,28 56,32 C 60,36 61,43 59,49 Z" fill="rgba(20,9,1,0.63)"/>
+        <path d="M 60,126 C 54,137 48,150 44,159" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 68,129 C 64,140 62,152 61,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M 55,113 C 47,107 38,100 32,94 C 30,92 30,88 34,87 C 38,86 41,88 45,93 C 50,99 54,108 60,113" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 98,130 C 97,142 95,154 93,163" stroke="rgba(20,9,1,0.58)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 110,126 C 110,138 108,151 107,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M 121,104 C 128,98 136,94 141,97 C 145,100 144,107 139,111 C 134,115 126,112 122,107" fill="rgba(20,9,1,0.52)"/>
+        <path d="M 74,82 C 71,73 70,63 73,54 C 76,46 83,41 90,43 C 97,45 100,53 98,63 C 96,72 90,80 82,83 Z" fill="rgba(20,9,1,0.68)"/>
+        <path d="M 76,72 C 68,77 64,86 66,94 C 68,100 73,102 77,98" fill="rgba(20,9,1,0.4)"/>
+        <circle cx="88" cy="42" r="7.5" fill="rgba(20,9,1,0.68)"/>
+        <path d="M 83,36 C 81,29 83,23 88,21 C 93,19 97,23 95,29" stroke="rgba(20,9,1,0.62)" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+        <path d="M 95,29 C 99,25 105,23 108,27" stroke="rgba(170,120,18,0.38)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M 93,59 C 99,53 106,47 113,44 C 117,42 119,44 119,47 C 119,50 116,53 111,54 C 105,56 97,60 94,66" fill="none" stroke="rgba(20,9,1,0.65)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="119" cy="46" r="3.5" fill="rgba(20,9,1,0.62)"/>
+        <circle cx="120" cy="46" r="1.2" fill="rgba(170,100,255,0.72)"/>
+        <circle cx="100" cy="100" r="97" fill="url(#vign)"/>
+      </g>
+      <polygon points="98,94 148,60 178,38 200,0 200,200 192,132 157,114"
+        fill="none" stroke="rgba(150,80,255,0.5)" stroke-width="1.2"
+        filter="url(#sg3)" clip-path="url(#cp3)"/>
+    </svg>
+
+    <!-- Scherbe 4 (unten-rechts) — enthüllt durch Station 5 -->
+    <svg class="coin-shard hidden" id="sh4" viewBox="0 0 200 200">
+      <defs>
+        <clipPath id="cp4"><polygon points="98,94 157,114 192,132 200,200 114,196 90,152"/></clipPath>
+        <filter id="sg4"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g clip-path="url(#cp4)">
+        <circle cx="100" cy="100" r="97" fill="url(#rg)"/>
+        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(205,150,38,0.6)" stroke-width="2.8"/>
+        <circle cx="100" cy="100" r="89" fill="none" stroke="rgba(150,100,24,0.28)" stroke-width="0.8"/>
+        <path id="rim4" d="M 18,100 A 82,82 0 1,1 182,100" fill="none"/>
+        <text font-family="Cinzel,serif" font-size="7.5" fill="rgba(28,12,2,0.72)" letter-spacing="2.8">
+          <textPath href="#rim4" startOffset="1%">KVRFVRSTENS · MAXIMILIANS · I · CHVRF · V · BAIERN</textPath>
+        </text>
+        <rect x="56" y="133" width="88" height="18" rx="2.5" fill="rgba(22,10,2,0.58)"/>
+        <text x="100" y="145" text-anchor="middle" font-family="Cinzel,serif" font-size="5.2" fill="rgba(170,120,18,0.62)" letter-spacing="1.5">ERRICHTET · 1839</text>
+        <path d="M 54,124 C 49,114 48,102 52,91 C 56,81 66,74 76,71 C 86,68 98,70 107,75 C 117,81 122,92 121,104 C 120,115 113,124 100,128 C 87,132 63,132 54,124 Z" fill="rgba(20,9,1,0.65)"/>
+        <path d="M 60,126 C 54,137 48,150 44,159" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 68,129 C 64,140 62,152 61,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M 98,130 C 97,142 95,154 93,163" stroke="rgba(20,9,1,0.58)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 110,126 C 110,138 108,151 107,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M 121,104 C 128,98 136,94 141,97 C 145,100 144,107 139,111 C 134,115 126,112 122,107" fill="rgba(20,9,1,0.52)"/>
+        <circle cx="100" cy="100" r="97" fill="url(#vign)"/>
+      </g>
+      <polygon points="98,94 157,114 192,132 200,200 114,196 90,152"
+        fill="none" stroke="rgba(150,80,255,0.5)" stroke-width="1.2"
+        filter="url(#sg4)" clip-path="url(#cp4)"/>
+    </svg>
+
+    <!-- Scherbe 5 (unten-links) — enthüllt durch Station 3 -->
+    <svg class="coin-shard hidden" id="sh5" viewBox="0 0 200 200">
+      <defs>
+        <clipPath id="cp5"><polygon points="98,94 90,152 114,196 0,200 10,150 30,165 60,183"/></clipPath>
+        <filter id="sg5"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g clip-path="url(#cp5)">
+        <circle cx="100" cy="100" r="97" fill="url(#rg)"/>
+        <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(205,150,38,0.6)" stroke-width="2.8"/>
+        <circle cx="100" cy="100" r="89" fill="none" stroke="rgba(150,100,24,0.28)" stroke-width="0.8"/>
+        <path id="rim5" d="M 18,100 A 82,82 0 1,1 182,100" fill="none"/>
+        <text font-family="Cinzel,serif" font-size="7.5" fill="rgba(28,12,2,0.72)" letter-spacing="2.8">
+          <textPath href="#rim5" startOffset="1%">KVRFVRSTENS · MAXIMILIANS · I · CHVRF · V · BAIERN</textPath>
+        </text>
+        <rect x="56" y="133" width="88" height="18" rx="2.5" fill="rgba(22,10,2,0.58)"/>
+        <text x="100" y="145" text-anchor="middle" font-family="Cinzel,serif" font-size="5.2" fill="rgba(170,120,18,0.62)" letter-spacing="1.5">ERRICHTET · 1839</text>
+        <path d="M 54,124 C 49,114 48,102 52,91 C 56,81 66,74 76,71 C 86,68 98,70 107,75 C 117,81 122,92 121,104 C 120,115 113,124 100,128 C 87,132 63,132 54,124 Z" fill="rgba(20,9,1,0.65)"/>
+        <path d="M 53,99 C 48,89 45,78 43,69 C 41,62 41,56 45,51 C 48,47 53,47 57,51 C 61,55 62,61 64,69 C 66,77 64,88 57,97 Z" fill="rgba(20,9,1,0.63)"/>
+        <path d="M 60,126 C 54,137 48,150 44,159" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 68,129 C 64,140 62,152 61,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M 55,113 C 47,107 38,100 32,94 C 30,92 30,88 34,87 C 38,86 41,88 45,93 C 50,99 54,108 60,113" stroke="rgba(20,9,1,0.62)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 98,130 C 97,142 95,154 93,163" stroke="rgba(20,9,1,0.58)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M 110,126 C 110,138 108,151 107,162" stroke="rgba(20,9,1,0.58)" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <circle cx="100" cy="100" r="97" fill="url(#vign)"/>
+      </g>
+      <polygon points="98,94 90,152 114,196 0,200 10,150 30,165 60,183"
+        fill="none" stroke="rgba(150,80,255,0.5)" stroke-width="1.2"
+        filter="url(#sg5)" clip-path="url(#cp5)"/>
+    </svg>
+
+    <!-- Riss-Linien (immer sichtbar) -->
+    <svg viewBox="0 0 200 200" style="position:absolute;inset:0;width:200px;height:200px;z-index:10;pointer-events:none;">
+      <defs>
+        <filter id="cg"><feGaussianBlur stdDeviation="1.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <clipPath id="coinClip"><circle cx="100" cy="100" r="96"/></clipPath>
+      </defs>
+      <g clip-path="url(#coinClip)">
+        <!-- Risse: dicke dunkle Linie + dünner Lila-Schimmer -->
+        <g stroke="#07070e" stroke-width="2.8" fill="none" stroke-linecap="round">
+          <line x1="98" y1="94" x2="82"  y2="4"/>
+          <line x1="98" y1="94" x2="178" y2="38"/>
+          <line x1="98" y1="94" x2="192" y2="132"/>
+          <line x1="98" y1="94" x2="114" y2="196"/>
+          <line x1="98" y1="94" x2="10"  y2="150"/>
+        </g>
+        <g stroke="rgba(130,60,220,0.4)" stroke-width="0.7" fill="none" stroke-linecap="round" filter="url(#cg)">
+          <line x1="98" y1="94" x2="82"  y2="4"/>
+          <line x1="98" y1="94" x2="178" y2="38"/>
+          <line x1="98" y1="94" x2="192" y2="132"/>
+          <line x1="98" y1="94" x2="114" y2="196"/>
+          <line x1="98" y1="94" x2="10"  y2="150"/>
+        </g>
+        <!-- Bruchpunkt-Funken -->
+        <circle cx="98" cy="94" r="2.5" fill="rgba(170,90,255,0.65)" filter="url(#cg)"/>
+      </g>
+    </svg>
+
+  </div><!-- end coin-stage -->
+
+  <div class="coin-progress">
+    <em id="shardCount">0</em> von 5 Schnipseln gefunden
+  </div>
+</div>
+```
+
+- [ ] **Schritt 3: Im Browser prüfen**
+
+Datei neu laden. Erwartung: Runde dunkle Münzfläche mit sichtbaren Risslinien und lila Bruchpunkt-Funkeln in der Mitte. Kein Rechteck sichtbar — nur die runde Münze schwebt im dunklen Hintergrund.
+
+- [ ] **Schritt 4: Commit**
+
+```bash
+git add index.html
+git commit -m "feat: arcane coin SVG with 5 shards and crack overlay"
+```
+
+---
+
+## Task 4: Spieler-Modus — Stations-Liste
+
+**Files:**
+- Ändere: `index.html` → CSS + `#view-main`
+
+- [ ] **Schritt 1: CSS für Stations-Liste ergänzen**
+
+```css
+/* ── STATIONS LIST ── */
+.stations-section { padding: 0 16px; }
+.stations-heading {
+  font-family: var(--font-head);
+  font-size: 9px; letter-spacing: 3px; color: var(--text-muted);
+  text-transform: uppercase; margin-bottom: 12px; padding-left: 4px;
+}
+.station-card {
+  background: linear-gradient(135deg, rgba(22,16,42,0.92), rgba(12,9,26,0.96));
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative; overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.station-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(130,70,220,0.0), transparent);
+  transition: background 0.3s;
+}
+.station-card.solved { border-color: rgba(140,70,220,0.4); }
+.station-card.solved::before { background: linear-gradient(90deg, transparent, rgba(160,90,255,0.35), transparent); }
+.station-card.active  { border-color: var(--border-act); box-shadow: 0 0 18px rgba(0,180,200,0.1); }
+.station-card.active::before  { background: linear-gradient(90deg, transparent, rgba(0,210,230,0.4), transparent); }
+.station-card.locked  { opacity: 0.38; pointer-events: none; }
+
+.snum {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.snum-solved { background: linear-gradient(135deg,#2e1460,#180830); border: 1px solid rgba(150,70,240,0.6); color: #c090f8; box-shadow: 0 0 10px rgba(130,55,230,0.3); }
+.snum-active  { background: linear-gradient(135deg,#002e38,#001420); border: 1px solid rgba(0,200,220,0.7); color: #55d0e0; box-shadow: 0 0 10px rgba(0,190,210,0.35); }
+.snum-locked  { background: rgba(18,12,32,0.5); border: 1px solid rgba(50,38,80,0.4); color: var(--text-muted); }
+
+.sinfo { flex: 1; min-width: 0; }
+.sname { font-family: var(--font-head); font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.station-card.active .sname  { color: var(--teal); }
+.station-card.locked .sname  { color: var(--text-muted); }
+.smeta { font-size: 11px; color: var(--text-dim); font-style: italic; }
+.station-card.active .smeta  { color: #3a8898; }
+
+.scheck {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(130,55,220,0.18); border: 1px solid rgba(155,75,245,0.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #b080f0; flex-shrink: 0;
+}
+.sarrow { font-size: 16px; color: var(--text-muted); flex-shrink: 0; }
+.station-card.active  .sarrow { color: var(--teal); }
+.station-card.solved  .sarrow { color: var(--purple); }
+```
+
+- [ ] **Schritt 2: Stations-Liste nach Münz-Section in `#view-main` ergänzen**
+
+```html
+<div class="stations-section">
+  <div class="stations-heading">◈ Stationen</div>
+  <div id="stationList"></div>
+</div>
+```
+
+- [ ] **Schritt 3: JS — State + renderMain() Funktion in `<script>` ergänzen**
+
+```js
+// ── STATE ───────────────────────────────────────────────────
+const STATE_KEY = 'schnipseljagd_v1';
+let state = loadState();
+
+function defaultState() {
+  return { solved: [], orgMode: false, checklist: {} };
+}
+function loadState() {
+  try { return { ...defaultState(), ...JSON.parse(localStorage.getItem(STATE_KEY) || '{}') }; }
+  catch { return defaultState(); }
+}
+function saveState() { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+
+// ── NAVIGATION ───────────────────────────────────────────────
+let currentStation = null;
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+}
+
+// ── HAUPTANSICHT RENDERN ─────────────────────────────────────
+function renderMain() {
+  // Münze aktualisieren
+  for (let i = 1; i <= 5; i++) {
+    const shard = document.getElementById('sh' + i);
+    if (!shard) continue;
+    const stationThatRevealsShard = Object.entries(SHARD_MAP).find(([,s]) => s === i)?.[0];
+    const revealed = stationThatRevealsShard && state.solved.includes(Number(stationThatRevealsShard));
+    shard.classList.toggle('visible', !!revealed);
+    shard.classList.toggle('hidden',  !revealed);
+  }
+  document.getElementById('shardCount').textContent = state.solved.length;
+  const coinDark = document.getElementById('coinDark');
+  if (coinDark) coinDark.style.opacity = state.solved.length >= 5 ? '0' : '1';
+
+  // Stations-Liste rendern
+  const list = document.getElementById('stationList');
+  if (!list) return;
+  list.innerHTML = STATIONS.map(s => {
+    const solved = state.solved.includes(s.id);
+    const active = !solved && (s.id === 1 || state.solved.includes(s.id - 1));
+    const locked = !solved && !active;
+    const cls  = solved ? 'solved' : active ? 'active' : 'locked';
+    const ncls = solved ? 'snum-solved' : active ? 'snum-active' : 'snum-locked';
+    const right = solved
+      ? `<div class="scheck">✓</div>`
+      : `<div class="sarrow">›</div>`;
+    return `
+      <div class="station-card ${cls}" onclick="openStation(${s.id})">
+        <div class="snum ${ncls}">${s.id}</div>
+        <div class="sinfo">
+          <div class="sname">${s.ort}</div>
+          <div class="smeta">${s.titel}</div>
+        </div>
+        ${right}
+      </div>`;
+  }).join('');
+
+  showView('main');
+}
+
+// App starten
+renderMain();
+```
+
+- [ ] **Schritt 4: Browser prüfen**
+
+Erwartung: 5 Stations-Karten sichtbar. Station 1 leuchtet teal (aktiv), 2–5 gedimmt (gesperrt). Münze dunkel mit Risslinien.
+
+- [ ] **Schritt 5: Commit**
+
+```bash
+git add index.html
+git commit -m "feat: main view with station list and coin state"
+```
+
+---
+
+## Task 5: Station-Detail-Ansicht (Spieler-Modus)
+
+**Files:**
+- Ändere: `index.html` → CSS + `#view-detail` + JS
+
+- [ ] **Schritt 1: CSS für Detail-Ansicht**
+
+```css
+/* ── DETAIL VIEW ── */
+.detail-wrap { padding: 0 16px 20px; }
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--teal); font-family: var(--font-head);
+  font-size: 11px; letter-spacing: 1px;
+  padding: 16px 0 14px; cursor: pointer; width: fit-content;
+}
+.detail-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(0,35,45,0.8); border: 1px solid rgba(0,180,200,0.3);
+  border-radius: 20px; padding: 4px 12px;
+  font-family: var(--font-head); font-size: 9px; letter-spacing: 2px;
+  color: var(--teal); margin-bottom: 10px;
+}
+.detail-title {
+  font-family: var(--font-head); font-size: 19px; font-weight: 900;
+  color: var(--text); margin-bottom: 3px; line-height: 1.2;
+}
+.detail-subtitle { font-size: 13px; color: var(--text-dim); font-style: italic; margin-bottom: 18px; }
+
+.riddle-box {
+  background: rgba(12,8,24,0.9); border: 1px solid rgba(90,60,150,0.3);
+  border-radius: 10px; padding: 16px; margin-bottom: 14px; position: relative;
+}
+.riddle-box::before {
+  content: '« Rätselkarte »';
+  position: absolute; top: -9px; left: 14px;
+  background: var(--bg); padding: 0 7px;
+  font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-muted);
+}
+.riddle-text { font-size: 14px; color: #b0a0d0; line-height: 1.75; white-space: pre-wrap; }
+
+/* Tabs */
+.tab-row { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+.tab {
+  padding: 6px 13px; border-radius: 20px;
+  font-family: var(--font-head); font-size: 9px; letter-spacing: 1px;
+  cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
+}
+.tab.on  { background: rgba(120,50,220,0.18); border-color: rgba(155,80,255,0.45); color: var(--purple); }
+.tab.off { background: rgba(18,12,32,0.6); border-color: rgba(50,38,80,0.3); color: var(--text-muted); }
+
+/* Answer section */
+.answer-section {
+  background: rgba(8,5,18,0.85); border: 1px solid rgba(130,60,220,0.22);
+  border-radius: 10px; padding: 14px; margin-bottom: 12px;
+}
+.answer-label { font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 8px; }
+.answer-input {
+  width: 100%; background: rgba(25,16,48,0.85); border: 1px solid rgba(90,55,170,0.35);
+  border-radius: 7px; padding: 10px 12px; color: var(--text);
+  font-family: var(--font-head); font-size: 15px; letter-spacing: 3px; text-align: center;
+  outline: none; transition: border-color 0.2s;
+  -webkit-appearance: none; appearance: none;
+}
+.answer-input:focus { border-color: rgba(155,80,255,0.55); }
+.check-btn {
+  width: 100%; margin-top: 10px;
+  background: linear-gradient(135deg, rgba(90,35,185,0.4), rgba(0,130,155,0.3));
+  border: 1px solid rgba(130,65,240,0.45); border-radius: 9px;
+  padding: 12px; color: var(--purple);
+  font-family: var(--font-head); font-size: 11px; letter-spacing: 2px;
+  cursor: pointer; text-align: center;
+  box-shadow: 0 0 14px rgba(110,50,210,0.14);
+  transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.check-btn:active { transform: scale(0.98); }
+
+/* Feedback */
+.feedback {
+  border-radius: 9px; padding: 12px 14px; margin-bottom: 12px;
+  font-size: 13px; line-height: 1.5; display: none;
+}
+.feedback.correct { background: rgba(0,100,60,0.25); border: 1px solid rgba(0,200,120,0.3); color: #60e8a8; }
+.feedback.wrong   { background: rgba(120,20,20,0.25); border: 1px solid rgba(220,60,60,0.3); color: #e88080; }
+.feedback.show { display: block; }
+
+/* Hint section */
+.hint-section { margin-bottom: 12px; }
+.hint-btn {
+  background: transparent; border: 1px solid rgba(80,55,130,0.3);
+  border-radius: 7px; padding: 8px 14px; color: var(--text-muted);
+  font-family: var(--font-head); font-size: 9px; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.2s; width: 100%; text-align: left;
+}
+.hint-text {
+  margin-top: 8px; padding: 10px 12px;
+  background: rgba(40,28,70,0.5); border-radius: 7px;
+  font-size: 12px; color: #9080c0; font-style: italic;
+  display: none;
+}
+.hint-text.show { display: block; }
+
+/* Divider */
+.divider { height: 1px; background: linear-gradient(90deg,transparent,rgba(90,55,140,0.3),transparent); margin: 14px 0; }
+
+/* Solved state in detail */
+.solved-banner {
+  background: rgba(60,20,130,0.25); border: 1px solid rgba(140,70,255,0.35);
+  border-radius: 9px; padding: 14px; text-align: center;
+  color: var(--purple); font-family: var(--font-head); font-size: 12px; letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.next-hint {
+  font-size: 12px; color: var(--text-dim); font-style: italic;
+  text-align: center; padding: 0 8px;
+}
+```
+
+- [ ] **Schritt 2: HTML für `#view-detail` einfügen**
+
+```html
+<div class="detail-wrap">
+  <div class="back-btn" onclick="renderMain()">‹ Zurück</div>
+  <div id="detailContent"></div>
+</div>
+```
+
+- [ ] **Schritt 3: JS — openStation() + renderDetail() + checkAnswer**
+
+```js
+function openStation(id) {
+  currentStation = id;
+  renderDetail(id);
+  showView('detail');
+}
+
+function renderDetail(id) {
+  const s     = STATIONS.find(x => x.id === id);
+  const solved = state.solved.includes(id);
+  const active = !solved && (id === 1 || state.solved.includes(id - 1));
+
+  const statusLabel = solved ? 'Gelöst ✓' : active ? 'Aktiv' : 'Gesperrt';
+  const badgeColor  = solved
+    ? 'rgba(70,25,160,0.8); border-color:rgba(140,70,255,0.4); color:#c090f8'
+    : 'rgba(0,35,45,0.8); border-color:rgba(0,180,200,0.3); color:#40c8d8';
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-badge" style="background:${badgeColor}">
+      Station ${id} · ${statusLabel}
+    </div>
+    <div class="detail-title">${s.titel}</div>
+    <div class="detail-subtitle">${s.ort} · ${s.mechanismus}</div>
+
+    <div class="tab-row">
+      <div class="tab on"  id="tabRätsel" onclick="showTab('rätsel')">Rätsel</div>
+      <div class="tab off" id="tabHinweis" onclick="showTab('hinweis')">Hinweis</div>
+    </div>
+
+    <div id="tabContentRätsel">
+      ${solved ? `
+        <div class="solved-banner">◈ Rätsel gelöst ◈</div>
+        <div class="next-hint">${s.nächster_ort ? 'Nächste Station: ' + s.nächster_ort : 'Du hast alle Rätsel gelöst!'}</div>
+      ` : `
+        <div class="riddle-box">
+          <div class="riddle-text">${s.rätseltext}</div>
+        </div>
+        <div class="answer-section">
+          <div class="answer-label">◈ Deine Antwort</div>
+          <input class="answer-input" id="answerInput" type="text" placeholder="· · · · · · · ·"
+            autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+            onkeydown="if(event.key==='Enter') submitAnswer(${id})"/>
+        </div>
+        <div id="feedback" class="feedback"></div>
+        <button class="check-btn" onclick="submitAnswer(${id})">◈ Lösung prüfen</button>
+      `}
+    </div>
+
+    <div id="tabContentHinweis" style="display:none;">
+      <div class="hint-section">
+        <button class="hint-btn" onclick="toggleHint('h1')">💡 Tipp 1 anzeigen</button>
+        <div class="hint-text" id="h1">${s.hinweis}</div>
+      </div>
+      <div class="hint-section">
+        <button class="hint-btn" onclick="toggleHint('h2')">💡 Tipp 2 anzeigen (Spoiler)</button>
+        <div class="hint-text" id="h2">${s.hinweis2}</div>
+      </div>
+    </div>
+  `;
+}
+
+function showTab(tab) {
+  document.getElementById('tabContentRätsel').style.display  = tab === 'rätsel'  ? '' : 'none';
+  document.getElementById('tabContentHinweis').style.display = tab === 'hinweis' ? '' : 'none';
+  document.getElementById('tabRätsel').className  = 'tab ' + (tab === 'rätsel'  ? 'on' : 'off');
+  document.getElementById('tabHinweis').className = 'tab ' + (tab === 'hinweis' ? 'on' : 'off');
+}
+
+function toggleHint(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+
+function submitAnswer(id) {
+  const input = document.getElementById('answerInput');
+  if (!input) return;
+  const correct = checkAnswer(id, input.value);
+  const fb = document.getElementById('feedback');
+  if (correct) {
+    fb.className = 'feedback correct show';
+    fb.textContent = '✓ Richtig! Du hast einen Schnipsel gefunden.';
+    if (!state.solved.includes(id)) {
+      state.solved.push(id);
+      saveState();
+    }
+    // Scherbe aufleuchten lassen
+    revealShard(SHARD_MAP[id]);
+    // Nach kurzer Pause Detail neu rendern (zeigt "Gelöst"-Banner)
+    setTimeout(() => renderDetail(id), 1200);
+  } else {
+    fb.className = 'feedback wrong show';
+    fb.textContent = 'Noch nicht ganz… Versuch es nochmal oder schau dir die Tipps an.';
+    input.focus();
+  }
+}
+
+function revealShard(shardId) {
+  const el = document.getElementById('sh' + shardId);
+  if (!el || el.classList.contains('visible')) return;
+  el.classList.remove('hidden');
+  el.classList.add('visible');
+  // Aufleuchten
+  el.style.filter = 'brightness(2.2) drop-shadow(0 0 18px rgba(200,140,255,0.9))';
+  setTimeout(() => { el.style.filter = ''; }, 900);
+  document.getElementById('shardCount').textContent = state.solved.length;
+  const coinDark = document.getElementById('coinDark');
+  if (coinDark && state.solved.length >= 5) coinDark.style.opacity = '0';
+}
+```
+
+- [ ] **Schritt 4: Browser prüfen**
+
+Station 1 anklicken → Detail-Ansicht öffnet. Rätseltext sichtbar. Eingabe "DACHAU" → grünes Feedback "Richtig!". Scherbe 3 leuchtet auf. Zurück → Station 1 jetzt lila/gelöst, Station 2 aktiv (teal).
+
+- [ ] **Schritt 5: Commit**
+
+```bash
+git add index.html
+git commit -m "feat: station detail view with answer validation and shard reveal"
+```
+
+---
+
+## Task 6: Organisator-Modus (PIN + Inhalt)
+
+**Files:**
+- Ändere: `index.html` → CSS + Lock-Icon + `#view-org` + JS
+
+- [ ] **Schritt 1: CSS für Organisator-Modus**
+
+```css
+/* ── ORG LOCK BUTTON ── */
+.lock-btn {
+  position: fixed; bottom: 20px; right: 20px; z-index: 100;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(18,12,32,0.85); border: 1px solid rgba(70,45,120,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  transition: border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lock-btn.unlocked { border-color: rgba(0,200,220,0.5); }
+
+/* ── PIN MODAL ── */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(4,3,10,0.88);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.hidden { display: none; }
+.modal {
+  background: linear-gradient(135deg, #100d22, #0c0a1a);
+  border: 1px solid rgba(110,60,210,0.35);
+  border-radius: 18px; padding: 28px 24px; width: 100%; max-width: 340px;
+  box-shadow: 0 0 40px rgba(100,50,200,0.2);
+}
+.modal h3 {
+  font-family: var(--font-head); font-size: 14px; letter-spacing: 3px;
+  text-align: center; color: var(--text); margin-bottom: 6px; font-weight: 700;
+}
+.modal-sub { font-size: 12px; color: var(--text-dim); text-align: center; margin-bottom: 20px; font-style: italic; }
+.pin-input {
+  width: 100%; background: rgba(25,16,48,0.9); border: 1px solid rgba(90,55,170,0.4);
+  border-radius: 8px; padding: 12px; color: var(--text);
+  font-family: var(--font-head); font-size: 22px; letter-spacing: 8px; text-align: center;
+  outline: none; margin-bottom: 10px;
+  -webkit-appearance: none; appearance: none;
+}
+.pin-error { color: #e07070; font-size: 11px; text-align: center; margin-bottom: 10px; display: none; }
+.pin-error.show { display: block; }
+.modal-btn {
+  width: 100%; padding: 12px; border-radius: 8px;
+  background: linear-gradient(135deg, rgba(80,30,170,0.45), rgba(0,110,135,0.3));
+  border: 1px solid rgba(120,60,230,0.45); color: var(--purple);
+  font-family: var(--font-head); font-size: 11px; letter-spacing: 2px;
+  cursor: pointer; margin-bottom: 8px; text-align: center;
+  transition: all 0.2s;
+}
+.modal-close {
+  width: 100%; padding: 8px; background: transparent;
+  border: 1px solid rgba(50,35,80,0.3); border-radius: 8px;
+  color: var(--text-muted); font-family: var(--font-head); font-size: 10px;
+  letter-spacing: 1px; cursor: pointer; text-align: center;
+}
+
+/* ── ORG VIEW ── */
+.org-wrap { padding: 0 16px 20px; }
+.org-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 14px; }
+.org-title { font-family: var(--font-head); font-size: 12px; letter-spacing: 3px; color: var(--teal); text-transform: uppercase; }
+.org-exit { font-family: var(--font-head); font-size: 10px; color: var(--text-muted); cursor: pointer; letter-spacing: 1px; }
+
+.org-section {
+  background: rgba(14,10,28,0.9); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px; margin-bottom: 14px;
+}
+.org-section-title {
+  font-family: var(--font-head); font-size: 9px; letter-spacing: 2px;
+  color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
+}
+
+/* Org-Stationen */
+.org-station { margin-bottom: 16px; border-bottom: 1px solid rgba(60,40,100,0.25); padding-bottom: 14px; }
+.org-station:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.org-station-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.org-station-name { font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--text); }
+.org-station-mech { font-size: 11px; color: var(--text-dim); font-style: italic; }
+.solution-pill {
+  background: rgba(80,30,160,0.3); border: 1px solid rgba(140,65,255,0.4);
+  border-radius: 6px; padding: 4px 10px;
+  font-family: var(--font-head); font-size: 11px; letter-spacing: 2px; color: #c090f8;
+  display: inline-block; margin: 4px 0 6px;
+}
+.org-detail { font-size: 12px; color: #7060a0; line-height: 1.6; }
+
+/* Checkliste */
+.checklist-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid rgba(40,28,70,0.3); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.checklist-item:last-child { border-bottom: none; }
+.cl-check {
+  width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  border: 1px solid rgba(90,55,160,0.4); background: rgba(20,14,40,0.6);
+  display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--purple);
+  transition: all 0.2s;
+}
+.cl-check.done { background: rgba(70,25,150,0.35); border-color: rgba(140,70,255,0.5); }
+.cl-label { font-size: 13px; color: var(--text); line-height: 1.4; }
+.cl-label.done { text-decoration: line-through; color: var(--text-muted); }
+
+/* Vigenère-Anzeige */
+.vigenere-box {
+  background: rgba(8,5,18,0.9); border: 1px solid rgba(0,160,180,0.25);
+  border-radius: 8px; padding: 12px; margin-top: 8px;
+}
+.vig-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.vig-label { font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-muted); }
+.vig-val { font-family: var(--font-head); font-size: 13px; letter-spacing: 3px; color: var(--teal); word-break: break-all; }
+
+/* Druck-Ansicht */
+@media print {
+  body { background: white !important; color: black !important; }
+  body::before { display: none; }
+  .lock-btn, .modal-backdrop, .back-btn, .tab-row, .answer-section,
+  .check-btn, .feedback, .hint-section, .coin-section,
+  .stations-section, #view-org { display: none !important; }
+  .riddle-box { border: 1px solid #ccc !important; background: white !important; }
+  .riddle-box::before { color: #666 !important; background: white !important; }
+  .riddle-text { color: black !important; }
+  .detail-title { color: black !important; -webkit-text-fill-color: black !important; }
+  .detail-subtitle { color: #444 !important; }
+  .detail-badge { border: 1px solid #ccc !important; color: #444 !important; background: white !important; }
+  .app-title { -webkit-text-fill-color: black !important; color: black !important; }
+  .app-date { color: #444 !important; }
+  @page { margin: 15mm; }
+}
+```
+
+- [ ] **Schritt 2: Lock-Button + PIN-Modal ins `<body>` einfügen (direkt vor `</body>`)**
+
+```html
+<!-- Lock-Button (immer sichtbar) -->
+<button class="lock-btn" id="lockBtn" onclick="toggleLock()" title="Organisator-Modus">🔒</button>
+
+<!-- PIN-Modal -->
+<div class="modal-backdrop hidden" id="pinModal">
+  <div class="modal">
+    <h3>◈ Organisator ◈</h3>
+    <p class="modal-sub">Bitte PIN eingeben</p>
+    <input class="pin-input" id="pinInput" type="password" inputmode="numeric"
+      maxlength="4" placeholder="· · · ·"
+      onkeydown="if(event.key==='Enter') submitPin()"/>
+    <div class="pin-error" id="pinError">Falscher PIN. Bitte nochmal.</div>
+    <button class="modal-btn" onclick="submitPin()">Entsperren</button>
+    <button class="modal-close" onclick="closePin()">Abbrechen</button>
+  </div>
+</div>
+```
+
+- [ ] **Schritt 3: HTML für `#view-org`**
+
+```html
+<div class="org-wrap">
+  <div class="org-header">
+    <div class="org-title">◈ Organisator</div>
+    <div class="org-exit" onclick="exitOrg()">✕ Beenden</div>
+  </div>
+  <div id="orgContent"></div>
+</div>
+```
+
+- [ ] **Schritt 4: JS für Organisator-Modus**
+
+```js
+const CHECKLIST = [
+  'Rätselkarten drucken (5 Stück)',
+  'Rätselkarten laminieren oder in Schutzhülle',
+  'Station 1 vorbereiten (Zuhause)',
+  'Schnipsel an Stationen 2–5 hinterlegen',
+  'App-URL ans eigene Handy schicken',
+  'PIN merken: ' + PIN,
+  'Lösungen als Backup-Screenshot',
+  'Reservierung La Trattoria by Giovanni bestätigen',
+];
+
+function toggleLock() {
+  if (state.orgMode) {
+    exitOrg(); return;
+  }
+  const modal = document.getElementById('pinModal');
+  modal.classList.remove('hidden');
+  setTimeout(() => document.getElementById('pinInput').focus(), 100);
+}
+
+function closePin() {
+  document.getElementById('pinModal').classList.add('hidden');
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').classList.remove('show');
+}
+
+function submitPin() {
+  const val = document.getElementById('pinInput').value;
+  if (val === PIN) {
+    state.orgMode = true;
+    closePin();
+    document.getElementById('lockBtn').textContent = '🔓';
+    document.getElementById('lockBtn').classList.add('unlocked');
+    renderOrg();
+    showView('org');
+  } else {
+    document.getElementById('pinError').classList.add('show');
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
+}
+
+function exitOrg() {
+  state.orgMode = false;
+  document.getElementById('lockBtn').textContent = '🔒';
+  document.getElementById('lockBtn').classList.remove('unlocked');
+  renderMain();
+}
+
+function toggleChecklist(idx) {
+  const key = 'cl_' + idx;
+  state.checklist[key] = !state.checklist[key];
+  saveState();
+  renderOrg();
+}
+
+function renderOrg() {
+  const vigKeyStr    = VIG_KEY;
+  const vigPlainStr  = VIG_PLAIN;
+  const vigCipherStr = VIG_CIPHER.match(/.{1,4}/g).join(' · ');
+
+  document.getElementById('orgContent').innerHTML = `
+    <!-- Stations mit Lösungen -->
+    <div class="org-section">
+      <div class="org-section-title">◈ Stationen & Lösungen</div>
+      ${STATIONS.map(s => `
+        <div class="org-station">
+          <div class="org-station-head">
+            <div class="org-station-name">${s.id}. ${s.titel}</div>
+            <div class="org-station-mech">${s.mechanismus}</div>
+          </div>
+          <div class="org-detail" style="margin-bottom:4px;color:#5a4888;">${s.ort}</div>
+          <div class="solution-pill">→ ${s.lösung}</div>
+          <div class="org-detail">${s.mechanismus_erkl}</div>
+          <div class="org-detail" style="margin-top:4px;color:#3a2858;">Nächster Ort: ${s.nächster_ort || '—'}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- Vigenère -->
+    <div class="org-section">
+      <div class="org-section-title">◈ Vigenère-Chiffre (Station 5)</div>
+      <div class="vigenere-box">
+        <div class="vig-row"><span class="vig-label">Schlüssel</span><span class="vig-val">${vigKeyStr}</span></div>
+        <div class="vig-row"><span class="vig-label">Klartext</span><span class="vig-val">${vigPlainStr}</span></div>
+        <div class="vig-row"><span class="vig-label">Geheimtext</span><span class="vig-val">${vigCipherStr}</span></div>
+      </div>
+    </div>
+
+    <!-- Fortschritt -->
+    <div class="org-section">
+      <div class="org-section-title">◈ Aktueller Fortschritt</div>
+      <div style="font-size:13px;color:var(--text-dim);">
+        Gelöst: <strong style="color:var(--purple)">${state.solved.length}</strong> / 5 Stationen
+        ${state.solved.length > 0 ? '— ' + state.solved.map(id => STATIONS.find(s=>s.id===id)?.titel).join(', ') : ''}
+      </div>
+      <button onclick="if(confirm('Fortschritt wirklich zurücksetzen?')){state.solved=[];saveState();renderOrg();renderMain();}"
+        style="margin-top:10px;padding:6px 12px;border-radius:6px;border:1px solid rgba(80,40,120,0.3);background:transparent;color:var(--text-muted);font-family:var(--font-head);font-size:9px;letter-spacing:1px;cursor:pointer;">
+        ↺ Fortschritt zurücksetzen
+      </button>
+    </div>
+
+    <!-- Checkliste -->
+    <div class="org-section">
+      <div class="org-section-title">◈ Checkliste Vorbereitung</div>
+      ${CHECKLIST.map((item, i) => {
+        const done = !!state.checklist['cl_' + i];
+        return `
+          <div class="checklist-item" onclick="toggleChecklist(${i})">
+            <div class="cl-check ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+            <div class="cl-label ${done ? 'done' : ''}">${item}</div>
+          </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Druck-Hinweis -->
+    <div class="org-section">
+      <div class="org-section-title">◈ Rätselkarten drucken</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
+        Zur Druck-Ansicht: Zurück → Station öffnen → Browser-Druckfunktion (⌘P / Strg+P)
+      </div>
+    </div>
+  `;
+  showView('org');
+}
+```
+
+- [ ] **Schritt 5: Browser prüfen**
+
+🔒-Icon unten rechts klicken → PIN-Modal erscheint. "1985" eingeben → Organisator-Modus öffnet. Alle 5 Lösungen sichtbar, Vigenère-Tabelle mit berechneten Werten, Checkliste abhakbar. Falschen PIN eingeben → Fehler-Meldung.
+
+- [ ] **Schritt 6: Commit**
+
+```bash
+git add index.html
+git commit -m "feat: organizer mode with PIN, solutions, vigenere display, checklist"
+```
+
+---
+
+## Task 7: localStorage-Persistenz prüfen + Feinschliff
+
+**Files:**
+- Ändere: `index.html`
+
+- [ ] **Schritt 1: State korrekt beim Start wiederherstellen**
+
+Stelle sicher, dass `renderMain()` am Ende des `<script>`-Blocks aufgerufen wird UND die gespeicherten Zustände (gelöste Stationen) korrekt auf die Münze angewendet werden. Prüfe die `renderMain()`-Funktion: Sie muss für jede gelöste Station die zugehörige Scherbe von `.hidden` zu `.visible` setzen ohne Animation (kein Flash beim Laden):
+
+```js
+// In renderMain(), nach dem Münze-Update, Scherben ohne Blitz setzen:
+for (let i = 1; i <= 5; i++) {
+  const shardId = SHARD_MAP[i];
+  const el = document.getElementById('sh' + shardId);
+  if (!el) continue;
+  const solved = state.solved.includes(i);
+  el.style.transition = 'none'; // Kein Transition beim ersten Laden
+  el.classList.toggle('visible', solved);
+  el.classList.toggle('hidden', !solved);
+  // Transition nach kurzer Pause wieder aktivieren
+  setTimeout(() => { el.style.transition = ''; }, 50);
+}
+```
+
+- [ ] **Schritt 2: App in Browser testen — Persistenz**
+
+1. Station 1 lösen ("DACHAU")
+2. Seite neu laden (F5 / Cmd+R)
+3. Erwartung: Station 1 bleibt gelöst, Scherbe 3 sichtbar, Station 2 aktiv.
+
+- [ ] **Schritt 3: Mobile touch-Feinschliff im CSS**
+
+Ergänze ganz oben im `<style>`:
+
+```css
+/* Verhindert Zoom bei Doppeltap und Input-Zoom auf iOS */
+input, button { font-size: max(16px, 1em); }
+html { -webkit-text-size-adjust: 100%; }
+/* Scrollverhalten */
+body { -webkit-overflow-scrolling: touch; }
+```
+
+- [ ] **Schritt 4: Final im Browser prüfen**
+
+- Alle 5 Stationen der Reihe nach lösen
+- Münze baut sich mit richtigen Scherben auf (nicht sequenziell: sh3, sh1, sh5, sh2, sh4)
+- Beim letzten Rätsel (Station 5): dunkler Münz-Hintergrund blendet aus, vollständige Münze sichtbar
+- Seite neu laden: Zustand korrekt wiederhergestellt
+- Organisator-PIN prüfen, Checkliste abhaken, Reload → Haken noch da
+
+- [ ] **Schritt 5: Commit**
+
+```bash
+git add index.html
+git commit -m "feat: localStorage persistence and mobile polish"
+```
+
+---
+
+## Task 8: README + GitHub Pages
+
+**Files:**
+- Erstelle: `README.md`
+
+- [ ] **Schritt 1: README.md anlegen**
+
+```markdown
+# Schnipseljagd 🗝️
+
+Interaktive Web-App für eine 5-Stationen-Schatzsuche · 02.05.2026
+
+## Deployment (GitHub Pages)
+
+1. Repository auf GitHub erstellen (z.B. `schnipseljagd`)
+2. `index.html` hochladen (Upload-Button oder `git push`)
+3. Repository → Settings → Pages → Source: **Deploy from branch** → Branch: `main` → `/root` → Save
+4. Nach ~2 Minuten: `https://[dein-username].github.io/schnipseljagd`
+
+## Lokale Nutzung
+
+Datei `index.html` direkt im Browser öffnen — kein Server nötig.
+
+## Organisator-Zugang
+
+PIN: Im Code in der Konstante `PIN` definiert (Standard: Geburtsjahr).
+```
+
+- [ ] **Schritt 2: Commit + Push-Anleitung ausgeben**
+
+```bash
+git add README.md
+git commit -m "docs: add README with GitHub Pages deployment instructions"
+```
+
+Dann dem User die Anleitung zeigen:
+```
+# Auf GitHub Pages deployen:
+# 1. Neues Repository auf github.com anlegen
+# 2. git remote add origin https://github.com/USERNAME/schnipseljagd.git
+# 3. git push -u origin main
+# 4. Settings → Pages → Branch: main → Save
+```
+
+---
+
+## Self-Review
+
+### Spec-Abdeckung
+
+| Anforderung | Task |
+|---|---|
+| Übersicht aller 5 Stationen mit Status | Task 4 |
+| Rätselkarte-Text pro Station | Task 5 |
+| Lösungshinweise für Organisator | Task 6 |
+| Mechanismus-Erklärung | Task 6 |
+| Lösungen mit Klick einblenden | Task 5 (Hinweis-Tabs) + Task 6 |
+| Passwortgeschützt (PIN) | Task 6 |
+| Checkliste Vorbereitung | Task 6 |
+| Vigenère auto-berechnet | Task 2 + Task 6 |
+| Interaktiver Modus (Eingabe + Prüfung) | Task 5 |
+| Fortschritts-Tracking | Task 4 + Task 7 |
+| Druck-Ansicht (print CSS) | Task 6 |
+| Münz-Puzzle mit Arcane-Design | Task 3 |
+| Scherben in zufälliger Reihenfolge | Task 3 (SHARD_MAP) |
+| localStorage Persistenz | Task 7 |
+| GitHub Pages | Task 8 |
+| Spieler-Modus | Task 4+5 |
+| Organisator-Modus mit PIN | Task 6 |
+
+Alle Anforderungen abgedeckt. ✓
+
+### Typkonsistenz
+
+- `SHARD_MAP` Schlüssel sind Numbers (1–5), `state.solved` enthält Numbers → `state.solved.includes(Number(stationId))` korrekt ✓
+- `STATIONS[4].rätseltext` wird in Task 2 mutiert (Vigenère-Text eingesetzt) bevor Task 5 darauf zugreift ✓
+- `revealShard(SHARD_MAP[id])` — `id` ist Number, `SHARD_MAP[id]` gibt Number zurück ✓

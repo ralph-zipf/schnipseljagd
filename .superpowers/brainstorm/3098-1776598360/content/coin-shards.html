@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Münz-Scherben Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #08080f;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 40px 20px;
+    font-family: -apple-system, sans-serif;
+    color: #e0d8f0;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(120,60,180,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(0,150,180,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  h2 {
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #c8a0f0, #80c8e0, #f0b040);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: #5a4a7a;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  .coin-wrap {
+    position: relative;
+    width: 220px;
+    height: 220px;
+  }
+  /* Each shard is absolutely positioned, same size as container */
+  .shard {
+    position: absolute;
+    inset: 0;
+    width: 220px;
+    height: 220px;
+    transition: opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease;
+  }
+  .shard.hidden {
+    opacity: 0;
+    filter: blur(4px) brightness(0);
+    transform: scale(0.96);
+  }
+  .shard.revealed {
+    opacity: 1;
+    filter: none;
+    transform: scale(1);
+  }
+  /* crack glow lines between shards */
+  .cracks {
+    position: absolute; inset: 0;
+    pointer-events: none;
+  }
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .btn-row {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+  }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(140,80,255,0.4);
+    background: rgba(40,20,70,0.6);
+    color: #b090e0;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(80,40,140,0.6); border-color: rgba(180,120,255,0.6); }
+  .btn.solved { background: rgba(100,40,200,0.3); border-color: rgba(180,120,255,0.6); color: #d0a0ff; }
+  .status {
+    font-size: 11px; color: #6050a0;
+    letter-spacing: 2px;
+    font-style: italic;
+  }
+  .status span { color: #b090e0; }
+  .reset-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(80,60,120,0.3);
+    background: transparent;
+    color: #4a3a6a;
+    font-size: 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<h2>◈ 5 Schnipsel · 1 Geheimnis ◈</h2>
+<p class="subtitle">Löse ein Rätsel — enthülle einen Schnipsel</p>
+
+<div class="coin-wrap" id="coinWrap">
+  <svg width="220" height="220" viewBox="0 0 220 220" style="position:absolute;inset:0;z-index:10;pointer-events:none;" class="cracks">
+    <defs>
+      <!-- glow filter for cracks -->
+      <filter id="crackGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <!-- Crack lines matching shard boundaries -->
+    <g filter="url(#crackGlow)" stroke="rgba(20,12,35,0.95)" stroke-width="2.5" fill="none">
+      <!-- main diagonal crack top-right to bottom-left -->
+      <path d="M 148,12 L 138,55 L 155,90 L 142,130 L 158,175 L 145,210"/>
+      <!-- crack left side -->
+      <path d="M 72,15 L 80,60 L 62,95 L 75,140 L 65,200"/>
+      <!-- horizontal crack across middle -->
+      <path d="M 15,108 L 55,100 L 80,115 L 120,105 L 155,118 L 200,110"/>
+    </g>
+    <!-- thin inner glow on crack edges -->
+    <g stroke="rgba(120,60,200,0.3)" stroke-width="0.8" fill="none">
+      <path d="M 148,12 L 138,55 L 155,90 L 142,130 L 158,175 L 145,210"/>
+      <path d="M 72,15 L 80,60 L 62,95 L 75,140 L 65,200"/>
+      <path d="M 15,108 L 55,100 L 80,115 L 120,105 L 155,118 L 200,110"/>
+    </g>
+  </svg>
+
+  <!-- SHARD 1: top-left -->
+  <svg class="shard hidden" id="s1" width="220" height="220" viewBox="0 0 220 220">
+    <defs>
+      <clipPath id="c1">
+        <polygon points="10,10 148,12 138,55 80,60 72,15"/>
+      </clipPath>
+      <clipPath id="c1b">
+        <polygon points="10,10 148,12 138,55 80,60 72,15"/>
+      </clipPath>
+      <radialGradient id="coinFace1" cx="40%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#c8922a"/>
+        <stop offset="40%" stop-color="#9a6a18"/>
+        <stop offset="100%" stop-color="#5a3a08"/>
+      </radialGradient>
+      <filter id="shardGlow1">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <!-- coin face clipped to shard shape -->
+    <g clip-path="url(#c1)">
+      <circle cx="110" cy="110" r="100" fill="url(#coinFace1)"/>
+      <!-- outer ring decoration -->
+      <circle cx="110" cy="110" r="98" fill="none" stroke="rgba(200,160,60,0.6)" stroke-width="3"/>
+      <circle cx="110" cy="110" r="88" fill="none" stroke="rgba(160,120,40,0.3)" stroke-width="1"/>
+      <!-- Text around edge -->
+      <path id="arc1" d="M 30,110 A 80,80 0 1,1 190,110" fill="none"/>
+      <text font-family="Cinzel, Georgia, serif" font-size="8" fill="rgba(40,20,5,0.8)" letter-spacing="3">
+        <textPath href="#arc1">MAXIMILIANVS · I · COM · PAL · RHEN</textPath>
+      </text>
+      <!-- Portrait silhouette: crown -->
+      <path d="M 88,62 L 88,55 L 95,62 L 102,50 L 110,60 L 118,50 L 125,62 L 132,55 L 132,62 Z" fill="rgba(40,20,5,0.6)"/>
+      <!-- Portrait face oval -->
+      <ellipse cx="110" cy="80" rx="14" ry="18" fill="rgba(40,20,5,0.5)"/>
+      <!-- Shoulders / robe -->
+      <path d="M 85,95 Q 110,108 135,95 L 138,130 Q 110,140 82,130 Z" fill="rgba(40,20,5,0.45)"/>
+      <!-- collar decoration -->
+      <path d="M 96,98 Q 110,105 124,98" stroke="rgba(200,160,40,0.4)" stroke-width="1" fill="none"/>
+      <!-- shield/coat of arms -->
+      <path d="M 100,112 L 110,110 L 120,112 L 120,124 Q 110,130 100,124 Z" fill="rgba(40,20,5,0.4)" stroke="rgba(180,140,40,0.3)" stroke-width="0.5"/>
+      <!-- Arcane hex-glow overlay -->
+      <circle cx="110" cy="110" r="100" fill="url(#hexOverlay1)" opacity="0.15"/>
+    </g>
+    <!-- shard edge glow -->
+    <polygon points="10,10 148,12 138,55 80,60 72,15" fill="none" stroke="rgba(180,120,255,0.5)" stroke-width="1.5" filter="url(#shardGlow1)"/>
+  </svg>
+
+  <!-- SHARD 2: top-right -->
+  <svg class="shard hidden" id="s2" width="220" height="220" viewBox="0 0 220 220">
+    <defs>
+      <clipPath id="c2">
+        <polygon points="148,12 210,10 210,108 155,118 142,130 155,90 138,55"/>
+      </clipPath>
+      <radialGradient id="coinFace2" cx="40%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#c8922a"/>
+        <stop offset="40%" stop-color="#9a6a18"/>
+        <stop offset="100%" stop-color="#5a3a08"/>
+      </radialGradient>
+      <filter id="shardGlow2">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g clip-path="url(#c2)">
+      <circle cx="110" cy="110" r="100" fill="url(#coinFace2)"/>
+      <circle cx="110" cy="110" r="98" fill="none" stroke="rgba(200,160,60,0.6)" stroke-width="3"/>
+      <circle cx="110" cy="110" r="88" fill="none" stroke="rgba(160,120,40,0.3)" stroke-width="1"/>
+      <path id="arc2" d="M 30,110 A 80,80 0 1,1 190,110" fill="none"/>
+      <text font-family="Cinzel, Georgia, serif" font-size="8" fill="rgba(40,20,5,0.8)" letter-spacing="3">
+        <textPath href="#arc2">MAXIMILIANVS · I · COM · PAL · RHEN</textPath>
+      </text>
+      <path d="M 88,62 L 88,55 L 95,62 L 102,50 L 110,60 L 118,50 L 125,62 L 132,55 L 132,62 Z" fill="rgba(40,20,5,0.6)"/>
+      <ellipse cx="110" cy="80" rx="14" ry="18" fill="rgba(40,20,5,0.5)"/>
+      <path d="M 85,95 Q 110,108 135,95 L 138,130 Q 110,140 82,130 Z" fill="rgba(40,20,5,0.45)"/>
+      <path d="M 96,98 Q 110,105 124,98" stroke="rgba(200,160,40,0.4)" stroke-width="1" fill="none"/>
+      <path d="M 100,112 L 110,110 L 120,112 L 120,124 Q 110,130 100,124 Z" fill="rgba(40,20,5,0.4)" stroke="rgba(180,140,40,0.3)" stroke-width="0.5"/>
+    </g>
+    <polygon points="148,12 210,10 210,108 155,118 142,130 155,90 138,55" fill="none" stroke="rgba(180,120,255,0.5)" stroke-width="1.5" filter="url(#shardGlow2)"/>
+  </svg>
+
+  <!-- SHARD 3: middle-left -->
+  <svg class="shard hidden" id="s3" width="220" height="220" viewBox="0 0 220 220">
+    <defs>
+      <clipPath id="c3">
+        <polygon points="10,10 72,15 80,60 62,95 75,140 65,200 10,210"/>
+      </clipPath>
+      <radialGradient id="coinFace3" cx="40%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#c8922a"/>
+        <stop offset="40%" stop-color="#9a6a18"/>
+        <stop offset="100%" stop-color="#5a3a08"/>
+      </radialGradient>
+      <filter id="shardGlow3">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g clip-path="url(#c3)">
+      <circle cx="110" cy="110" r="100" fill="url(#coinFace3)"/>
+      <circle cx="110" cy="110" r="98" fill="none" stroke="rgba(200,160,60,0.6)" stroke-width="3"/>
+      <circle cx="110" cy="110" r="88" fill="none" stroke="rgba(160,120,40,0.3)" stroke-width="1"/>
+      <path id="arc3" d="M 30,110 A 80,80 0 1,1 190,110" fill="none"/>
+      <text font-family="Cinzel, Georgia, serif" font-size="8" fill="rgba(40,20,5,0.8)" letter-spacing="3">
+        <textPath href="#arc3">MAXIMILIANVS · I · COM · PAL · RHEN</textPath>
+      </text>
+      <path d="M 88,62 L 88,55 L 95,62 L 102,50 L 110,60 L 118,50 L 125,62 L 132,55 L 132,62 Z" fill="rgba(40,20,5,0.6)"/>
+      <ellipse cx="110" cy="80" rx="14" ry="18" fill="rgba(40,20,5,0.5)"/>
+      <path d="M 85,95 Q 110,108 135,95 L 138,130 Q 110,140 82,130 Z" fill="rgba(40,20,5,0.45)"/>
+      <path d="M 96,98 Q 110,105 124,98" stroke="rgba(200,160,40,0.4)" stroke-width="1" fill="none"/>
+      <path d="M 100,112 L 110,110 L 120,112 L 120,124 Q 110,130 100,124 Z" fill="rgba(40,20,5,0.4)" stroke="rgba(180,140,40,0.3)" stroke-width="0.5"/>
+    </g>
+    <polygon points="10,10 72,15 80,60 62,95 75,140 65,200 10,210" fill="none" stroke="rgba(180,120,255,0.5)" stroke-width="1.5" filter="url(#shardGlow3)"/>
+  </svg>
+
+  <!-- SHARD 4: middle-right + bottom-right -->
+  <svg class="shard hidden" id="s4" width="220" height="220" viewBox="0 0 220 220">
+    <defs>
+      <clipPath id="c4">
+        <polygon points="155,118 210,108 210,210 145,210 158,175 142,130"/>
+      </clipPath>
+      <radialGradient id="coinFace4" cx="40%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#c8922a"/>
+        <stop offset="40%" stop-color="#9a6a18"/>
+        <stop offset="100%" stop-color="#5a3a08"/>
+      </radialGradient>
+      <filter id="shardGlow4">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g clip-path="url(#c4)">
+      <circle cx="110" cy="110" r="100" fill="url(#coinFace4)"/>
+      <circle cx="110" cy="110" r="98" fill="none" stroke="rgba(200,160,60,0.6)" stroke-width="3"/>
+      <circle cx="110" cy="110" r="88" fill="none" stroke="rgba(160,120,40,0.3)" stroke-width="1"/>
+      <path id="arc4" d="M 30,110 A 80,80 0 1,1 190,110" fill="none"/>
+      <text font-family="Cinzel, Georgia, serif" font-size="8" fill="rgba(40,20,5,0.8)" letter-spacing="3">
+        <textPath href="#arc4">MAXIMILIANVS · I · COM · PAL · RHEN</textPath>
+      </text>
+      <path d="M 88,62 L 88,55 L 95,62 L 102,50 L 110,60 L 118,50 L 125,62 L 132,55 L 132,62 Z" fill="rgba(40,20,5,0.6)"/>
+      <ellipse cx="110" cy="80" rx="14" ry="18" fill="rgba(40,20,5,0.5)"/>
+      <path d="M 85,95 Q 110,108 135,95 L 138,130 Q 110,140 82,130 Z" fill="rgba(40,20,5,0.45)"/>
+      <path d="M 96,98 Q 110,105 124,98" stroke="rgba(200,160,40,0.4)" stroke-width="1" fill="none"/>
+      <path d="M 100,112 L 110,110 L 120,112 L 120,124 Q 110,130 100,124 Z" fill="rgba(40,20,5,0.4)" stroke="rgba(180,140,40,0.3)" stroke-width="0.5"/>
+    </g>
+    <polygon points="155,118 210,108 210,210 145,210 158,175 142,130" fill="none" stroke="rgba(180,120,255,0.5)" stroke-width="1.5" filter="url(#shardGlow4)"/>
+  </svg>
+
+  <!-- SHARD 5: bottom-center -->
+  <svg class="shard hidden" id="s5" width="220" height="220" viewBox="0 0 220 220">
+    <defs>
+      <clipPath id="c5">
+        <polygon points="65,200 75,140 62,95 80,60 138,55 155,90 142,130 158,175 145,210"/>
+      </clipPath>
+      <radialGradient id="coinFace5" cx="40%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#c8922a"/>
+        <stop offset="40%" stop-color="#9a6a18"/>
+        <stop offset="100%" stop-color="#5a3a08"/>
+      </radialGradient>
+      <filter id="shardGlow5">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g clip-path="url(#c5)">
+      <circle cx="110" cy="110" r="100" fill="url(#coinFace5)"/>
+      <circle cx="110" cy="110" r="98" fill="none" stroke="rgba(200,160,60,0.6)" stroke-width="3"/>
+      <circle cx="110" cy="110" r="88" fill="none" stroke="rgba(160,120,40,0.3)" stroke-width="1"/>
+      <path id="arc5" d="M 30,110 A 80,80 0 1,1 190,110" fill="none"/>
+      <text font-family="Cinzel, Georgia, serif" font-size="8" fill="rgba(40,20,5,0.8)" letter-spacing="3">
+        <textPath href="#arc5">MAXIMILIANVS · I · COM · PAL · RHEN</textPath>
+      </text>
+      <path d="M 88,62 L 88,55 L 95,62 L 102,50 L 110,60 L 118,50 L 125,62 L 132,55 L 132,62 Z" fill="rgba(40,20,5,0.6)"/>
+      <ellipse cx="110" cy="80" rx="14" ry="18" fill="rgba(40,20,5,0.5)"/>
+      <path d="M 85,95 Q 110,108 135,95 L 138,130 Q 110,140 82,130 Z" fill="rgba(40,20,5,0.45)"/>
+      <path d="M 96,98 Q 110,105 124,98" stroke="rgba(200,160,40,0.4)" stroke-width="1" fill="none"/>
+      <path d="M 100,112 L 110,110 L 120,112 L 120,124 Q 110,130 100,124 Z" fill="rgba(40,20,5,0.4)" stroke="rgba(180,140,40,0.3)" stroke-width="0.5"/>
+    </g>
+    <polygon points="65,200 75,140 62,95 80,60 138,55 155,90 142,130 158,175 145,210" fill="none" stroke="rgba(180,120,255,0.5)" stroke-width="1.5" filter="url(#shardGlow5)"/>
+  </svg>
+
+  <!-- Dark overlay for hidden shards -->
+  <svg id="darkOverlay" width="220" height="220" viewBox="0 0 220 220" style="position:absolute;inset:0;pointer-events:none;z-index:5;">
+    <circle cx="110" cy="110" r="102" fill="rgba(8,8,15,0.85)"/>
+  </svg>
+</div>
+
+<div class="controls">
+  <div class="status">Schnipsel enthüllt: <span id="count">0</span> / 5</div>
+  <div class="btn-row">
+    <button class="btn" onclick="reveal(1)" id="btn1">Station 1 lösen</button>
+    <button class="btn" onclick="reveal(3)" id="btn3">Station 3 lösen</button>
+    <button class="btn" onclick="reveal(5)" id="btn5">Station 5 lösen</button>
+    <button class="btn" onclick="reveal(2)" id="btn2">Station 2 lösen</button>
+    <button class="btn" onclick="reveal(4)" id="btn4">Station 4 lösen</button>
+  </div>
+  <button class="reset-btn" onclick="resetAll()">↺ Zurücksetzen</button>
+</div>
+
+<script>
+  // Reveal order: stations map to shards in random order
+  // Station 1→shard3, 2→shard1, 3→shard5, 4→shard2, 5→shard4
+  const stationToShard = { 1:3, 2:1, 3:5, 4:2, 5:4 };
+  let revealedCount = 0;
+  const revealed = {};
+
+  function updateOverlay() {
+    const overlay = document.getElementById('darkOverlay');
+    // Build a clip that shows dark only over hidden areas
+    // Just remove overlay entirely once all revealed
+    if (revealedCount >= 5) {
+      overlay.style.display = 'none';
+    }
+  }
+
+  function reveal(station) {
+    if (revealed[station]) return;
+    revealed[station] = true;
+    revealedCount++;
+
+    const shardId = stationToShard[station];
+    const shard = document.getElementById('s' + shardId);
+    shard.classList.remove('hidden');
+    shard.classList.add('revealed');
+
+    const btn = document.getElementById('btn' + station);
+    btn.classList.add('solved');
+    btn.textContent = '✓ Station ' + station;
+
+    document.getElementById('count').textContent = revealedCount;
+    updateOverlay();
+
+    // Sparkle effect on reveal
+    shard.style.filter = 'brightness(1.8) drop-shadow(0 0 12px rgba(200,140,255,0.8))';
+    setTimeout(() => { shard.style.filter = ''; }, 600);
+  }
+
+  function resetAll() {
+    for (let i = 1; i <= 5; i++) {
+      revealed[i] = false;
+      document.getElementById('s' + stationToShard[i]).classList.remove('revealed');
+      document.getElementById('s' + stationToShard[i]).classList.add('hidden');
+      document.getElementById('btn' + i).classList.remove('solved');
+      document.getElementById('btn' + i).textContent = 'Station ' + i + ' lösen';
+    }
+    revealedCount = 0;
+    document.getElementById('count').textContent = 0;
+    document.getElementById('darkOverlay').style.display = '';
+  }
+</script>
+</body>
+</html>

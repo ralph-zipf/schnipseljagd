@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schnipseljagd – Arcane Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #08080f;
+    color: #e0d8f0;
+    font-family: 'Crimson Text', Georgia, serif;
+    min-height: 100vh;
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 24px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(120, 60, 180, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(0, 180, 200, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .phone-frame {
+    position: relative;
+    z-index: 1;
+    width: 320px;
+    flex-shrink: 0;
+  }
+
+  .phone-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #7060a0;
+    text-align: center;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .phone {
+    background: linear-gradient(180deg, #0d0b1a 0%, #0a0814 100%);
+    border-radius: 28px;
+    border: 1px solid rgba(150, 100, 220, 0.25);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.8),
+      0 0 40px rgba(100, 60, 180, 0.2),
+      inset 0 1px 0 rgba(180, 140, 255, 0.1);
+    overflow: hidden;
+    padding: 20px 16px 28px;
+    position: relative;
+  }
+
+  /* Subtle texture overlay */
+  .phone::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+    border-radius: 28px;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .app-title {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #c8a0f0 0%, #80c8e0 50%, #f0b040 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 2px;
+  }
+
+  .app-subtitle {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #6050a0;
+    text-transform: uppercase;
+  }
+
+  /* ── COIN PUZZLE ── */
+  .coin-section {
+    background: linear-gradient(135deg, rgba(30,20,50,0.8), rgba(15,10,30,0.9));
+    border: 1px solid rgba(150,100,220,0.2);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .coin-section::before {
+    content: '';
+    position: absolute;
+    top: -30px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 60px;
+    background: radial-gradient(ellipse, rgba(180,120,255,0.15), transparent);
+  }
+
+  .coin-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #8060c0;
+    text-align: center;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .coin-puzzle {
+    display: grid;
+    grid-template-areas: 'tl tr' 'ml mr' 'bot bot';
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 5px;
+    width: 140px;
+    margin: 0 auto 12px;
+  }
+
+  .piece {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
+    position: relative;
+  }
+
+  .piece-solved {
+    background: linear-gradient(135deg, #3a1a6e, #1a0a3a);
+    border: 1px solid rgba(180, 120, 255, 0.5);
+    color: #d0a0ff;
+    box-shadow: 0 0 12px rgba(160, 80, 255, 0.3), inset 0 1px 0 rgba(200,160,255,0.2);
+  }
+
+  .piece-solved::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(180,120,255,0.1) 0%, transparent 60%);
+  }
+
+  .piece-open {
+    background: rgba(20,15,35,0.8);
+    border: 1px dashed rgba(80,60,120,0.4);
+    color: #2a1a4a;
+  }
+
+  .piece-bot {
+    grid-area: bot;
+    height: 36px;
+  }
+
+  .coin-progress-text {
+    text-align: center;
+    font-size: 11px;
+    color: #7060a0;
+  }
+
+  .coin-progress-text span {
+    color: #b090e0;
+    font-weight: 600;
+  }
+
+  /* ── STATION LIST ── */
+  .stations-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #6050a0;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  .station-card {
+    background: linear-gradient(135deg, rgba(25,18,45,0.9), rgba(15,10,30,0.95));
+    border: 1px solid rgba(100,70,180,0.2);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .station-card.solved {
+    border-color: rgba(160, 80, 255, 0.4);
+  }
+
+  .station-card.solved::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(180,120,255,0.4), transparent);
+  }
+
+  .station-card.active {
+    border-color: rgba(0, 200, 220, 0.5);
+    box-shadow: 0 0 20px rgba(0, 180, 200, 0.1);
+  }
+
+  .station-card.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 210, 230, 0.5), transparent);
+  }
+
+  .station-card.locked {
+    opacity: 0.4;
+  }
+
+  .station-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .num-solved {
+    background: linear-gradient(135deg, #3a1a6e, #2a1050);
+    border: 1px solid rgba(160,80,255,0.6);
+    color: #c090f0;
+    box-shadow: 0 0 10px rgba(140,60,240,0.3);
+  }
+
+  .num-active {
+    background: linear-gradient(135deg, #003a40, #001a20);
+    border: 1px solid rgba(0,210,230,0.7);
+    color: #60d8e8;
+    box-shadow: 0 0 10px rgba(0,200,220,0.4);
+  }
+
+  .num-locked {
+    background: rgba(20,15,35,0.5);
+    border: 1px solid rgba(60,50,90,0.4);
+    color: #3a2a5a;
+  }
+
+  .station-info { flex: 1; min-width: 0; }
+
+  .station-name {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #d0c0f0;
+    margin-bottom: 2px;
+  }
+
+  .station-card.active .station-name { color: #80d8e8; }
+  .station-card.locked .station-name { color: #3a2a5a; }
+
+  .station-meta {
+    font-size: 10px;
+    color: #5a4a7a;
+    font-style: italic;
+  }
+
+  .station-card.active .station-meta { color: #4a8890; }
+
+  .station-arrow {
+    font-size: 14px;
+    color: #4a3a6a;
+    flex-shrink: 0;
+  }
+
+  .station-card.solved .station-arrow { color: #8060c0; }
+  .station-card.active .station-arrow { color: #40a8b8; }
+
+  .check-icon {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(140,60,240,0.2);
+    border: 1px solid rgba(160,80,255,0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    color: #b080f0;
+  }
+
+  /* ── DETAIL VIEW (right panel) ── */
+  .detail-frame {
+    position: relative;
+    z-index: 1;
+    width: 340px;
+    flex-shrink: 0;
+  }
+
+  .detail-phone {
+    background: linear-gradient(180deg, #0d0b1a 0%, #0a0814 100%);
+    border-radius: 28px;
+    border: 1px solid rgba(0, 180, 200, 0.2);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.8),
+      0 0 40px rgba(0, 150, 180, 0.15),
+      inset 0 1px 0 rgba(100, 200, 220, 0.08);
+    overflow: hidden;
+    padding: 20px 16px 28px;
+    position: relative;
+  }
+
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    color: #60a8b8; font-size: 11px;
+    font-family: 'Cinzel', serif; letter-spacing: 1px;
+    margin-bottom: 16px;
+    cursor: pointer;
+  }
+
+  .detail-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,40,50,0.8);
+    border: 1px solid rgba(0,180,200,0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: 2px;
+    color: #40b8c8;
+    margin-bottom: 10px;
+  }
+
+  .detail-badge::before { content: '◈'; }
+
+  .detail-title {
+    font-family: 'Cinzel', serif;
+    font-size: 16px; font-weight: 900;
+    color: #e0d0ff;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+
+  .detail-subtitle {
+    font-size: 12px; color: #6050a0;
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+
+  .riddle-box {
+    background: rgba(15,10,30,0.9);
+    border: 1px solid rgba(100,70,160,0.3);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .riddle-box::before {
+    content: '« Rätselkarte »';
+    position: absolute; top: -8px; left: 12px;
+    background: #0d0b1a;
+    padding: 0 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 8px; letter-spacing: 2px;
+    color: #6050a0;
+  }
+
+  .riddle-text {
+    font-size: 12px;
+    color: #b0a0d0;
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .tab-row {
+    display: flex; gap: 6px; margin-bottom: 12px;
+  }
+
+  .tab {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: 1px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .tab-active {
+    background: rgba(140,60,240,0.15);
+    border-color: rgba(160,80,255,0.4);
+    color: #c090f0;
+  }
+
+  .tab-inactive {
+    background: rgba(20,15,35,0.6);
+    border-color: rgba(60,50,90,0.3);
+    color: #4a3a6a;
+  }
+
+  .answer-section {
+    background: rgba(10,6,20,0.8);
+    border: 1px solid rgba(160,80,255,0.2);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .answer-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px; letter-spacing: 2px;
+    color: #6050a0; margin-bottom: 6px;
+  }
+
+  .answer-input {
+    width: 100%;
+    background: rgba(30,20,50,0.8);
+    border: 1px solid rgba(100,70,180,0.3);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: #d0c0f0;
+    font-family: 'Cinzel', serif;
+    font-size: 13px; letter-spacing: 4px;
+    text-align: center;
+    outline: none;
+  }
+
+  .solve-btn {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(100,40,200,0.4), rgba(0,140,160,0.3));
+    border: 1px solid rgba(140,80,255,0.4);
+    border-radius: 8px;
+    padding: 10px;
+    color: #c090f0;
+    font-family: 'Cinzel', serif;
+    font-size: 11px; letter-spacing: 2px;
+    cursor: pointer;
+    text-align: center;
+    margin-bottom: 8px;
+    box-shadow: 0 0 15px rgba(120,60,220,0.15);
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(100,70,160,0.3), transparent);
+    margin: 12px 0;
+  }
+
+  .org-hint {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: #3a2a5a;
+    font-style: italic;
+  }
+
+  .org-hint::before { content: '🔒'; font-size: 10px; }
+
+</style>
+<body>
+
+  <!-- LEFT: Hauptübersicht (Spieler-Ansicht) -->
+  <div class="phone-frame">
+    <div class="phone-label">Spieler-Ansicht</div>
+    <div class="phone">
+      <div class="app-header">
+        <div class="app-title">Schnipseljagd</div>
+        <div class="app-subtitle">02. Mai 2026 · München</div>
+      </div>
+
+      <div class="coin-section">
+        <div class="coin-label">◈ 5 Schnipsel · 1 Geheimnis ◈</div>
+        <div class="coin-puzzle">
+          <div class="piece piece-solved" style="grid-area:tl; border-radius:12px 4px 4px 12px;">I</div>
+          <div class="piece piece-solved" style="grid-area:tr; border-radius:4px 12px 12px 4px;">II</div>
+          <div class="piece piece-open"   style="grid-area:ml; border-radius:4px;">?</div>
+          <div class="piece piece-open"   style="grid-area:mr; border-radius:4px;">?</div>
+          <div class="piece piece-open piece-bot" style="border-radius:4px 4px 12px 12px;">?</div>
+        </div>
+        <div class="coin-progress-text"><span>2</span> von 5 Schnipseln gefunden</div>
+      </div>
+
+      <div class="stations-label">◈ Stationen</div>
+
+      <div class="station-card solved">
+        <div class="station-num num-solved">1</div>
+        <div class="station-info">
+          <div class="station-name">Zuhause</div>
+          <div class="station-meta">Der Geburts-Code</div>
+        </div>
+        <div class="check-icon">✓</div>
+      </div>
+
+      <div class="station-card solved">
+        <div class="station-num num-solved">2</div>
+        <div class="station-info">
+          <div class="station-name">Dachauer Altstadt</div>
+          <div class="station-meta">Das Wappentier-Telefon</div>
+        </div>
+        <div class="check-icon">✓</div>
+      </div>
+
+      <div class="station-card active">
+        <div class="station-num num-active">3</div>
+        <div class="station-info">
+          <div class="station-name">Café Zaunkönig</div>
+          <div class="station-meta">Die Kaffeehausbotschaft</div>
+        </div>
+        <div class="station-arrow">›</div>
+      </div>
+
+      <div class="station-card locked">
+        <div class="station-num num-locked">4</div>
+        <div class="station-info">
+          <div class="station-name">Amperauen</div>
+          <div class="station-meta">Die Zahlensprache</div>
+        </div>
+        <div class="station-arrow">›</div>
+      </div>
+
+      <div class="station-card locked">
+        <div class="station-num num-locked">5</div>
+        <div class="station-info">
+          <div class="station-name">La Veneziana</div>
+          <div class="station-meta">Die Vigenère-Falle</div>
+        </div>
+        <div class="station-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Station Detail (Spieler tippt Antwort ein) -->
+  <div class="detail-frame">
+    <div class="phone-label">Station-Detail (Spieler-Ansicht)</div>
+    <div class="detail-phone">
+      <div class="back-btn">‹ Zurück</div>
+
+      <div class="detail-badge">Station 3 · Aktiv</div>
+      <div class="detail-title">Die Kaffeehausbotschaft</div>
+      <div class="detail-subtitle">Café Zaunkönig · Steganographie</div>
+
+      <div class="tab-row">
+        <div class="tab tab-active">Rätsel</div>
+        <div class="tab tab-inactive">Hinweis</div>
+        <div class="tab tab-inactive">🔒 Lösung</div>
+      </div>
+
+      <div class="riddle-box">
+        <div class="riddle-text">
+          "Etwas an diesen Zeilen stimmt nicht.<br>
+          Findest du das Muster?<br><br>
+          Alle Wege beginnen mit einem einzigen Schritt,<br>
+          manchmal weiß man nicht, wohin er führt,<br>
+          plötzlich öffnet sich ein Horizont…"
+        </div>
+      </div>
+
+      <div class="answer-section">
+        <div class="answer-label">◈ Deine Antwort</div>
+        <input class="answer-input" placeholder="· · · · · · · · · · · ·" maxlength="12" />
+      </div>
+
+      <div class="solve-btn">◈ Lösung prüfen</div>
+
+      <div class="divider"></div>
+      <div class="org-hint">Lösung nur für Organisator sichtbar</div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+<style>
+  .preview { background: linear-gradient(135deg, #0d0d1a, #1a1a2e); border-radius: 12px; padding: 16px; font-family: -apple-system, sans-serif; color: #e0e0ff; min-height: 220px; position: relative; overflow: hidden; }
+  .preview::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+  .gold { color: #f0c040; }
+  .dim { color: #4a4a6a; }
+  .station-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #1e1e38; }
+  .dot-solved { width: 10px; height: 10px; border-radius: 50%; background: #f0c040; box-shadow: 0 0 6px #f0c040; flex-shrink: 0; }
+  .dot-open { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #2a2a4a; flex-shrink: 0; }
+  .badge { background: #f0c040; color: #0d0d1a; border-radius: 4px; padding: 1px 5px; font-size: 9px; font-weight: 700; }
+  .sidebar { background: #0d0d1a; border-right: 1px solid #1e1e38; padding: 10px; width: 90px; flex-shrink: 0; }
+  .sidebar-item { padding: 6px 8px; border-radius: 6px; font-size: 10px; margin-bottom: 4px; cursor: pointer; }
+  .sidebar-active { background: #1e1e38; border-left: 2px solid #f0c040; color: #f0c040; }
+  .coin-piece { width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #d4a843, #6b4c10); border: 1px solid #f0c040; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+  .coin-piece-empty { width: 28px; height: 28px; border-radius: 50%; border: 1px dashed #2a2a4a; }
+</style>
+
+<h2>Wie soll die App aufgebaut sein?</h2>
+<p class="subtitle">Das Hauptlayout — wie navigierst du zwischen den Stationen?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="hero-list" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden; min-height:200px;">
+      <div class="preview" style="min-height:200px; display:flex; flex-direction:column; gap:0; padding:12px;">
+        <div style="text-align:center; margin-bottom:8px;">
+          <div class="gold" style="font-size:10px; letter-spacing:2px;">◈ SCHNIPSELJAGD ◈</div>
+          <div style="display:flex; justify-content:center; gap:4px; margin-top:6px;">
+            <div class="coin-piece">K</div>
+            <div class="coin-piece">M</div>
+            <div class="coin-piece-empty"></div>
+            <div class="coin-piece-empty"></div>
+            <div class="coin-piece-empty"></div>
+          </div>
+          <div class="dim" style="font-size:9px; margin-top:4px;">2 von 5 Schnipsel gefunden</div>
+        </div>
+        <div style="flex:1;">
+          <div class="station-row"><div class="dot-solved"></div><span style="font-size:11px;">Station 1 · Zuhause</span><span class="badge">✓</span></div>
+          <div class="station-row"><div class="dot-solved"></div><span style="font-size:11px;">Station 2 · Altstadt</span><span class="badge">✓</span></div>
+          <div class="station-row"><div class="dot-open"></div><span style="font-size:11px; color:#a0a0c0;">Station 3 · Café</span></div>
+          <div class="station-row"><div class="dot-open"></div><span style="font-size:11px; color:#4a4a6a;">Station 4 · Amper</span></div>
+          <div class="station-row"><div class="dot-open"></div><span style="font-size:11px; color:#4a4a6a;">Station 5 · Eisdiele</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Hero + Liste</h3>
+      <p>Münze oben als Fortschritts-Anzeige, darunter alle 5 Stationen als scrollbare Liste. Klick auf Station → Detail-Ansicht. Einfach, eine Spalte, mobile-freundlich.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="sidebar" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden; min-height:200px;">
+      <div class="preview" style="min-height:200px; display:flex; flex-direction:row; padding:0;">
+        <div class="sidebar">
+          <div class="gold" style="font-size:9px; letter-spacing:1px; margin-bottom:8px; padding:0 4px;">STATIONEN</div>
+          <div class="sidebar-item sidebar-active">Ü1 Zuhause</div>
+          <div class="sidebar-item dim" style="font-size:10px;">Ü2 Altstadt</div>
+          <div class="sidebar-item dim" style="font-size:10px;">3 Café</div>
+          <div class="sidebar-item dim" style="font-size:10px;">4 Amper</div>
+          <div class="sidebar-item dim" style="font-size:10px;">5 Eisdiele</div>
+          <div style="margin-top:8px; padding: 4px;">
+            <div class="gold" style="font-size:9px; letter-spacing:1px;">MÜNZE</div>
+            <div style="display:flex; flex-wrap:wrap; gap:3px; margin-top:4px;">
+              <div class="coin-piece" style="width:20px;height:20px;font-size:7px;">K</div>
+              <div class="coin-piece" style="width:20px;height:20px;font-size:7px;">M</div>
+              <div class="coin-piece-empty" style="width:20px;height:20px;"></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; padding:10px;">
+          <div class="gold" style="font-size:11px; font-weight:700;">Station 1 · Zuhause</div>
+          <div style="font-size:9px; color:#a0a0c0; margin-top:2px;">Der Geburts-Code · Caesar-Chiffre</div>
+          <div style="background:#0d0d1a; border-radius:6px; padding:8px; margin-top:8px; font-size:9px; color:#c0c0e0; border-left: 2px solid #f0c040;">
+            "Berechne die Quersumme des Jahres…"
+          </div>
+          <div style="display:flex; gap:4px; margin-top:8px;">
+            <div style="background:#1e1e38; border-radius:4px; padding:3px 6px; font-size:9px; color:#a0a0c0;">Lösung</div>
+            <div style="background:#1e1e38; border-radius:4px; padding:3px 6px; font-size:9px; color:#a0a0c0;">Mechanismus</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Sidebar + Detail</h3>
+      <p>Linke Leiste mit allen Stationen, rechts immer der volle Detail-Bereich. Gut für Desktop/Tablet. Alles auf einen Blick – du springst schnell zwischen Stationen.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="tabs" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; overflow:hidden; min-height:200px;">
+      <div class="preview" style="min-height:200px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="text-align:center;">
+          <div class="gold" style="font-size:10px; letter-spacing:2px;">◈ SCHNIPSELJAGD ◈</div>
+        </div>
+        <div style="display:flex; gap:4px; justify-content:center;">
+          <div style="background:#f0c040; color:#0d0d1a; border-radius:20px; padding:3px 10px; font-size:10px; font-weight:700;">Übersicht</div>
+          <div style="background:#1e1e38; color:#a0a0c0; border-radius:20px; padding:3px 10px; font-size:10px;">Checkliste</div>
+          <div style="background:#1e1e38; color:#a0a0c0; border-radius:20px; padding:3px 10px; font-size:10px;">Druck</div>
+        </div>
+        <div style="background:#1e1e38; border-radius:10px; padding:10px; flex:1;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:11px; font-weight:700;">Station 3</div>
+            <div class="gold" style="font-size:10px;">→</div>
+          </div>
+          <div style="font-size:9px; color:#a0a0c0; margin-bottom:6px;">Café Zaunkönig · Steganographie</div>
+          <div style="background:#0d0d1a; border-radius:6px; padding:6px; font-size:8px; color:#c0c0e0;">Anfangsbuchstaben der Zeilen…</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Tabs oben</h3>
+      <p>Oben globale Navigation (Übersicht / Checkliste / Druck-Ansicht), der Hauptbereich darunter wechselt. Klar strukturiert, alle Funktionen explizit sichtbar.</p>
+    </div>
+  </div>
+
+</div>

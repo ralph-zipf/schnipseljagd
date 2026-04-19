@@ -1,0 +1,77 @@
+<h2>Welche visuelle Stimmung passt zur Schnipseljagd?</h2>
+<p class="subtitle">Wähle die Atmosphäre, die sich für die App richtig anfühlt</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="baroque" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #2c1a0e 0%, #5c3a1e 50%, #8b5e3c 100%); padding: 20px; min-height: 180px; display:flex; flex-direction:column; justify-content:space-between; font-family: Georgia, serif; border-bottom: 3px solid #c9a84c;">
+      <div style="color:#c9a84c; font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.8;">✦ Kurfürst Maximilian ✦</div>
+      <div style="text-align:center;">
+        <div style="width:60px;height:60px;border-radius:50%;border:3px solid #c9a84c;margin:0 auto 8px;background:radial-gradient(circle at 35% 35%, #d4a843, #8b6914);display:flex;align-items:center;justify-content:center;font-size:24px;">👑</div>
+        <div style="color:#e8d5a3; font-size:16px; font-weight:bold;">STATION 1</div>
+        <div style="color:#c9a84c; font-size:12px;">Der Geburts-Code</div>
+      </div>
+      <div style="display:flex; gap:6px; justify-content:center;">
+        <div style="width:14px;height:14px;border-radius:50%;background:#c9a84c;border:2px solid #8b6914;"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid #5c3a1e;"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid #5c3a1e;"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid #5c3a1e;"></div>
+        <div style="width:14px;height:14px;border-radius:50%;border:2px solid #5c3a1e;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Historisch-Barock</h3>
+      <p>Dunkelbraun, Pergament, Goldakzente. Fühlt sich an wie ein echtes historisches Rätselspiel aus der Zeit des Kurfürsten. Atmospheric und thematisch passend zu München.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="clean" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f8f9fa; padding: 20px; min-height: 180px; display:flex; flex-direction:column; justify-content:space-between; font-family: -apple-system, sans-serif; border-bottom: 3px solid #4a90d9;">
+      <div style="color:#4a90d9; font-size:11px; letter-spacing:2px; text-transform:uppercase; font-weight:600;">SCHNIPSELJAGD</div>
+      <div style="text-align:center;">
+        <div style="background:#4a90d9;border-radius:12px;padding:12px 20px;display:inline-block;margin-bottom:10px;">
+          <div style="color:white;font-weight:700;font-size:14px;">Station 1 ✓</div>
+        </div>
+        <div style="color:#888;font-size:12px;">3 von 5 gelöst</div>
+        <div style="background:#e9ecef;border-radius:8px;height:8px;margin-top:8px;overflow:hidden;">
+          <div style="width:60%;height:100%;background:#4a90d9;border-radius:8px;"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:center;">
+        <div style="padding:4px 10px;background:#4a90d9;color:white;border-radius:20px;font-size:11px;">1</div>
+        <div style="padding:4px 10px;background:#4a90d9;color:white;border-radius:20px;font-size:11px;">2</div>
+        <div style="padding:4px 10px;background:#4a90d9;color:white;border-radius:20px;font-size:11px;">3</div>
+        <div style="padding:4px 10px;background:#e9ecef;color:#888;border-radius:20px;font-size:11px;">4</div>
+        <div style="padding:4px 10px;background:#e9ecef;color:#888;border-radius:20px;font-size:11px;">5</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Clean & Funktional</h3>
+      <p>Weiß, klares Sans-Serif, blaue Akzente. Schnell bedienbar, übersichtlich. Priorität auf Funktion – du als Organisator findest alles sofort.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="mystery" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 50%, #16213e 100%); padding: 20px; min-height: 180px; display:flex; flex-direction:column; justify-content:space-between; font-family: -apple-system, sans-serif; border-bottom: 3px solid #f0c040;">
+      <div style="color:#f0c040; font-size:11px; letter-spacing:3px; text-transform:uppercase;">◈ Schnipseljagd ◈</div>
+      <div style="text-align:center;">
+        <div style="font-size:32px; margin-bottom:6px;">🗺️</div>
+        <div style="color:#f0f0ff;font-weight:700;font-size:15px;">STATION 1</div>
+        <div style="color:#f0c040;font-size:12px;margin-top:4px;">Rätsel aktiv</div>
+        <div style="color:#4a4a6a;font-size:11px;margin-top:2px;">4 noch gesperrt</div>
+      </div>
+      <div style="display:flex;gap:4px;justify-content:center;">
+        <div style="width:16px;height:16px;border-radius:50%;background:#f0c040;box-shadow:0 0 8px #f0c040;"></div>
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid #2a2a4a;"></div>
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid #2a2a4a;"></div>
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid #2a2a4a;"></div>
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid #2a2a4a;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Mystery & Nacht</h3>
+      <p>Dunkelblau, goldene Akzente, leichter Glüh-Effekt. Exit-Game-Stimmung, spannend und geheimnisvoll. Passt gut wenn die Schnipseljagd Abendstimmung haben soll.</p>
+    </div>
+  </div>
+
+</div>

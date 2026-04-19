@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kurfürst Maximilian – Arcane Coin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #080810;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 40px 20px;
+    font-family: 'Cinzel', Georgia, serif;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 40% 30%, rgba(100,50,160,0.14) 0%, transparent 55%),
+      radial-gradient(ellipse at 70% 75%, rgba(0,130,160,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  h2 {
+    font-size: 12px; letter-spacing: 5px; text-transform: uppercase;
+    background: linear-gradient(120deg, #c890f0 0%, #78c4de 50%, #e8aa38 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    text-align: center;
+  }
+  .subtitle { font-size: 10px; color: #4a3870; letter-spacing: 2px; text-align: center; margin-top: 4px; }
+
+  /* ── Coin container: round only ── */
+  .coin-stage {
+    position: relative;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    /* ambient glow around the coin */
+    filter: drop-shadow(0 0 28px rgba(160,90,255,0.35)) drop-shadow(0 0 8px rgba(220,170,50,0.2));
+  }
+
+  /* All shard SVGs share the same stage */
+  .shard-svg {
+    position: absolute; inset: 0;
+    width: 260px; height: 260px;
+    transition: opacity 0.7s ease, filter 0.7s ease, transform 0.7s ease;
+  }
+  .shard-svg.hidden {
+    opacity: 0;
+    filter: brightness(0) blur(3px);
+    transform: scale(0.97);
+  }
+  .shard-svg.visible {
+    opacity: 1;
+    filter: none;
+    transform: scale(1);
+  }
+
+  /* crack overlay always on top */
+  .crack-overlay {
+    position: absolute; inset: 0;
+    width: 260px; height: 260px;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  /* controls */
+  .controls { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .status { font-size: 10px; color: #5a4888; letter-spacing: 2px; }
+  .status em { color: #b090e0; font-style: normal; }
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn5 { grid-column: span 2; }
+  .btn {
+    padding: 9px 18px; border-radius: 20px;
+    border: 1px solid rgba(130,70,220,0.4);
+    background: rgba(30,15,55,0.7);
+    color: #a070d0; font-family: 'Cinzel', serif;
+    font-size: 10px; letter-spacing: 1px; cursor: pointer;
+    transition: all 0.25s; text-align: center;
+  }
+  .btn:hover { background: rgba(70,30,120,0.6); border-color: rgba(170,100,255,0.6); }
+  .btn.done { background: rgba(90,30,180,0.35); border-color: rgba(180,120,255,0.65); color: #d0a8f8; }
+  .reset {
+    margin-top: 4px; padding: 6px 16px; border-radius: 20px;
+    border: 1px solid rgba(60,40,100,0.35); background: transparent;
+    color: #382858; font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 1px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h2>◈ 5 Schnipsel · 1 Geheimnis ◈</h2>
+<p class="subtitle">Löse ein Rätsel — ein Schnipsel erscheint</p>
+
+<div class="coin-stage" id="stage">
+
+  <!--
+    ═══════════════════════════════════════
+    SHARD LAYOUT — 5 spokes from J=(128,122)
+    Crack tips at circle edge (r=126, center 130,130):
+      A → (105, 7)   top-left
+      B → (230, 50)  top-right
+      C → (250, 172) right
+      D → (148, 252) bottom
+      E → (14, 195)  bottom-left
+    ═══════════════════════════════════════
+    Each shard covers exactly one sector of the circle
+    (polygon goes to corners of 260x260 box so the
+     circular clipPath does the rounding)
+  -->
+
+  <!-- SHARD 1 – top-left  (between A and E, counter-clockwise) -->
+  <svg class="shard-svg hidden" id="sh1" viewBox="0 0 260 260">
+    <defs>
+      <clipPath id="cp1"><polygon points="128,122 108,8 0,0 0,260 14,195 42,215 78,238"/></clipPath>
+      <radialGradient id="rg1" cx="38%" cy="34%" r="70%">
+        <stop offset="0%"  stop-color="#d4962c"/>
+        <stop offset="35%" stop-color="#a06818"/>
+        <stop offset="75%" stop-color="#6b3f08"/>
+        <stop offset="100%" stop-color="#3a1e02"/>
+      </radialGradient>
+      <filter id="gsh1"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g clip-path="url(#cp1)">
+      <circle cx="130" cy="130" r="127" fill="url(#rg1)"/>
+      <!-- outer decorative ring -->
+      <circle cx="130" cy="130" r="124" fill="none" stroke="rgba(210,158,42,0.55)" stroke-width="3.5"/>
+      <circle cx="130" cy="130" r="118" fill="none" stroke="rgba(160,110,28,0.3)" stroke-width="1"/>
+      <!-- rim inscription text -->
+      <path id="rimArc" d="M 26,130 A 104,104 0 1,1 234,130" fill="none"/>
+      <text font-family="Cinzel,Georgia,serif" font-size="9.5" fill="rgba(32,16,4,0.75)" letter-spacing="3.5">
+        <textPath href="#rimArc" startOffset="2%">KVRFVRSTENS MAXIMILIANS I · CHVRF. V. BAIERN</textPath>
+      </text>
+      <!-- horse + rider silhouette -->
+      <!-- pedestal -->
+      <rect x="74" y="172" width="112" height="22" rx="3" fill="rgba(28,14,2,0.55)"/>
+      <rect x="78" y="173" width="104" height="20" rx="2" fill="none" stroke="rgba(180,130,30,0.3)" stroke-width="0.7"/>
+      <!-- pedestal inscription -->
+      <text x="130" y="186" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="rgba(180,130,20,0.6)" letter-spacing="2">ERRICHTET · 1839</text>
+      <!-- horse body -->
+      <path d="M 72,162 C 66,150 64,135 68,120 C 72,106 84,97 97,93 C 110,89 126,91 138,97 C 152,104 160,118 158,134 C 156,148 146,160 130,166 C 114,172 84,172 72,162 Z" fill="rgba(24,12,2,0.62)"/>
+      <!-- horse neck -->
+      <path d="M 70,128 C 64,116 60,102 56,92 C 53,84 52,76 56,70 C 58,65 63,65 68,68 C 73,71 75,78 78,88 C 81,98 79,112 72,124 Z" fill="rgba(24,12,2,0.60)"/>
+      <!-- horse head -->
+      <path d="M 56,70 C 52,64 50,57 53,52 C 56,47 63,46 68,50 C 72,54 73,60 71,67 C 69,73 63,73 56,70 Z" fill="rgba(24,12,2,0.60)"/>
+      <!-- nostril / detail -->
+      <ellipse cx="53" cy="56" rx="2.5" ry="1.5" fill="rgba(180,120,20,0.35)"/>
+      <!-- horse ear -->
+      <path d="M 65,47 L 62,40 L 70,44 Z" fill="rgba(24,12,2,0.55)"/>
+      <!-- front legs -->
+      <path d="M 78,164 C 72,178 65,194 60,205" stroke="rgba(24,12,2,0.58)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 88,168 C 84,182 82,196 80,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <!-- raised front leg -->
+      <path d="M 72,148 C 64,142 54,134 46,128 C 44,126 44,122 48,120 C 52,118 56,120 60,125 C 65,131 70,140 78,148" stroke="rgba(24,12,2,0.58)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <!-- rear legs -->
+      <path d="M 128,168 C 126,184 124,198 122,210" stroke="rgba(24,12,2,0.55)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 142,164 C 142,180 140,194 138,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <!-- tail -->
+      <path d="M 158,135 C 165,128 174,124 180,128 C 186,132 186,140 180,145 C 174,150 165,148 160,142" fill="rgba(24,12,2,0.52)"/>
+      <!-- rider body -->
+      <path d="M 98,108 C 94,98 93,86 96,76 C 99,67 107,62 114,64 C 122,66 126,74 124,84 C 122,94 116,102 108,108 Z" fill="rgba(24,12,2,0.65)"/>
+      <!-- rider cape/cloak behind -->
+      <path d="M 100,95 C 92,100 86,110 88,120 C 90,128 96,130 100,125" fill="rgba(24,12,2,0.42)"/>
+      <!-- rider head -->
+      <circle cx="113" cy="63" r="9" fill="rgba(24,12,2,0.65)"/>
+      <!-- hat / plume -->
+      <path d="M 108,55 C 106,48 108,42 113,40 C 118,38 122,42 120,48" stroke="rgba(24,12,2,0.58)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <path d="M 120,48 C 124,44 130,42 134,46" stroke="rgba(180,130,20,0.4)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- raised arm (gesturing right/forward) -->
+      <path d="M 118,80 C 124,74 132,68 140,65 C 144,63 147,65 147,68 C 147,72 143,75 138,76 C 132,78 124,82 120,88" fill="none" stroke="rgba(24,12,2,0.62)" stroke-width="6" stroke-linecap="round"/>
+      <!-- hand -->
+      <circle cx="147" cy="67" r="4.5" fill="rgba(24,12,2,0.60)"/>
+      <!-- Arcane hextech glow on horse eye -->
+      <circle cx="59" cy="54" r="2" fill="rgba(160,100,255,0.55)"/>
+      <!-- subtle inner light on rider -->
+      <path d="M 100,78 C 104,72 112,70 118,74" stroke="rgba(200,150,50,0.2)" stroke-width="1" fill="none"/>
+      <!-- ground line / base connection -->
+      <line x1="60" y1="210" x2="78" y2="175" stroke="rgba(24,12,2,0.35)" stroke-width="3"/>
+      <line x1="80" y1="210" x2="84" y2="175" stroke="rgba(24,12,2,0.32)" stroke-width="3"/>
+      <line x1="122" y1="210" x2="124" y2="172" stroke="rgba(24,12,2,0.32)" stroke-width="3"/>
+      <line x1="138" y1="208" x2="140" y2="170" stroke="rgba(24,12,2,0.32)" stroke-width="3"/>
+      <!-- Arcane glow overlay — subtle purple vignette -->
+      <radialGradient id="vign1" cx="50%" cy="50%" r="50%">
+        <stop offset="60%" stop-color="transparent"/>
+        <stop offset="100%" stop-color="rgba(60,20,100,0.35)"/>
+      </radialGradient>
+      <circle cx="130" cy="130" r="127" fill="url(#vign1)"/>
+      <!-- hextech sparkle glints -->
+      <circle cx="148" cy="67" r="1.5" fill="rgba(180,120,255,0.7)"/>
+      <circle cx="84" cy="97" r="1" fill="rgba(180,120,255,0.5)"/>
+      <circle cx="56" cy="54" r="1.2" fill="rgba(160,200,255,0.5)"/>
+    </g>
+    <!-- shard edge glow -->
+    <polygon points="128,122 108,8 0,0 0,260 14,195 42,215 78,238"
+      fill="none" stroke="rgba(160,90,255,0.55)" stroke-width="1.5"
+      filter="url(#gsh1)" clip-path="url(#cp1)"/>
+  </svg>
+
+  <!-- SHARD 2 – top (between A and B) -->
+  <svg class="shard-svg hidden" id="sh2" viewBox="0 0 260 260">
+    <defs>
+      <clipPath id="cp2"><polygon points="128,122 108,8 165,4 230,50 192,78"/></clipPath>
+      <radialGradient id="rg2" cx="38%" cy="34%" r="70%">
+        <stop offset="0%"  stop-color="#d4962c"/>
+        <stop offset="35%" stop-color="#a06818"/>
+        <stop offset="75%" stop-color="#6b3f08"/>
+        <stop offset="100%" stop-color="#3a1e02"/>
+      </radialGradient>
+      <filter id="gsh2"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g clip-path="url(#cp2)">
+      <circle cx="130" cy="130" r="127" fill="url(#rg2)"/>
+      <circle cx="130" cy="130" r="124" fill="none" stroke="rgba(210,158,42,0.55)" stroke-width="3.5"/>
+      <circle cx="130" cy="130" r="118" fill="none" stroke="rgba(160,110,28,0.3)" stroke-width="1"/>
+      <path id="rimArc2" d="M 26,130 A 104,104 0 1,1 234,130" fill="none"/>
+      <text font-family="Cinzel,Georgia,serif" font-size="9.5" fill="rgba(32,16,4,0.75)" letter-spacing="3.5">
+        <textPath href="#rimArc2" startOffset="2%">KVRFVRSTENS MAXIMILIANS I · CHVRF. V. BAIERN</textPath>
+      </text>
+      <rect x="74" y="172" width="112" height="22" rx="3" fill="rgba(28,14,2,0.55)"/>
+      <text x="130" y="186" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="rgba(180,130,20,0.6)" letter-spacing="2">ERRICHTET · 1839</text>
+      <path d="M 72,162 C 66,150 64,135 68,120 C 72,106 84,97 97,93 C 110,89 126,91 138,97 C 152,104 160,118 158,134 C 156,148 146,160 130,166 C 114,172 84,172 72,162 Z" fill="rgba(24,12,2,0.62)"/>
+      <path d="M 70,128 C 64,116 60,102 56,92 C 53,84 52,76 56,70 C 58,65 63,65 68,68 C 73,71 75,78 78,88 C 81,98 79,112 72,124 Z" fill="rgba(24,12,2,0.60)"/>
+      <path d="M 56,70 C 52,64 50,57 53,52 C 56,47 63,46 68,50 C 72,54 73,60 71,67 C 69,73 63,73 56,70 Z" fill="rgba(24,12,2,0.60)"/>
+      <ellipse cx="53" cy="56" rx="2.5" ry="1.5" fill="rgba(180,120,20,0.35)"/>
+      <path d="M 65,47 L 62,40 L 70,44 Z" fill="rgba(24,12,2,0.55)"/>
+      <path d="M 78,164 C 72,178 65,194 60,205" stroke="rgba(24,12,2,0.58)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 88,168 C 84,182 82,196 80,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <path d="M 72,148 C 64,142 54,134 46,128 C 44,126 44,122 48,120 C 52,118 56,120 60,125 C 65,131 70,140 78,148" stroke="rgba(24,12,2,0.58)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 128,168 C 126,184 124,198 122,210" stroke="rgba(24,12,2,0.55)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 142,164 C 142,180 140,194 138,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <path d="M 158,135 C 165,128 174,124 180,128 C 186,132 186,140 180,145 C 174,150 165,148 160,142" fill="rgba(24,12,2,0.52)"/>
+      <path d="M 98,108 C 94,98 93,86 96,76 C 99,67 107,62 114,64 C 122,66 126,74 124,84 C 122,94 116,102 108,108 Z" fill="rgba(24,12,2,0.65)"/>
+      <path d="M 100,95 C 92,100 86,110 88,120 C 90,128 96,130 100,125" fill="rgba(24,12,2,0.42)"/>
+      <circle cx="113" cy="63" r="9" fill="rgba(24,12,2,0.65)"/>
+      <path d="M 108,55 C 106,48 108,42 113,40 C 118,38 122,42 120,48" stroke="rgba(24,12,2,0.58)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <path d="M 120,48 C 124,44 130,42 134,46" stroke="rgba(180,130,20,0.4)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M 118,80 C 124,74 132,68 140,65 C 144,63 147,65 147,68 C 147,72 143,75 138,76 C 132,78 124,82 120,88" fill="none" stroke="rgba(24,12,2,0.62)" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="147" cy="67" r="4.5" fill="rgba(24,12,2,0.60)"/>
+      <circle cx="59" cy="54" r="2" fill="rgba(160,100,255,0.55)"/>
+      <radialGradient id="vign2" cx="50%" cy="50%" r="50%"><stop offset="60%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(60,20,100,0.35)"/></radialGradient>
+      <circle cx="130" cy="130" r="127" fill="url(#vign2)"/>
+      <circle cx="148" cy="67" r="1.5" fill="rgba(180,120,255,0.7)"/>
+    </g>
+    <polygon points="128,122 108,8 165,4 230,50 192,78"
+      fill="none" stroke="rgba(160,90,255,0.55)" stroke-width="1.5"
+      filter="url(#gsh2)" clip-path="url(#cp2)"/>
+  </svg>
+
+  <!-- SHARD 3 – right (between B and C) -->
+  <svg class="shard-svg hidden" id="sh3" viewBox="0 0 260 260">
+    <defs>
+      <clipPath id="cp3"><polygon points="128,122 192,78 230,50 260,0 260,260 250,172 205,148"/></clipPath>
+      <radialGradient id="rg3" cx="38%" cy="34%" r="70%">
+        <stop offset="0%"  stop-color="#d4962c"/>
+        <stop offset="35%" stop-color="#a06818"/>
+        <stop offset="75%" stop-color="#6b3f08"/>
+        <stop offset="100%" stop-color="#3a1e02"/>
+      </radialGradient>
+      <filter id="gsh3"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g clip-path="url(#cp3)">
+      <circle cx="130" cy="130" r="127" fill="url(#rg3)"/>
+      <circle cx="130" cy="130" r="124" fill="none" stroke="rgba(210,158,42,0.55)" stroke-width="3.5"/>
+      <circle cx="130" cy="130" r="118" fill="none" stroke="rgba(160,110,28,0.3)" stroke-width="1"/>
+      <path id="rimArc3" d="M 26,130 A 104,104 0 1,1 234,130" fill="none"/>
+      <text font-family="Cinzel,Georgia,serif" font-size="9.5" fill="rgba(32,16,4,0.75)" letter-spacing="3.5">
+        <textPath href="#rimArc3" startOffset="2%">KVRFVRSTENS MAXIMILIANS I · CHVRF. V. BAIERN</textPath>
+      </text>
+      <rect x="74" y="172" width="112" height="22" rx="3" fill="rgba(28,14,2,0.55)"/>
+      <text x="130" y="186" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="rgba(180,130,20,0.6)" letter-spacing="2">ERRICHTET · 1839</text>
+      <path d="M 72,162 C 66,150 64,135 68,120 C 72,106 84,97 97,93 C 110,89 126,91 138,97 C 152,104 160,118 158,134 C 156,148 146,160 130,166 C 114,172 84,172 72,162 Z" fill="rgba(24,12,2,0.62)"/>
+      <path d="M 70,128 C 64,116 60,102 56,92 C 53,84 52,76 56,70 C 58,65 63,65 68,68 C 73,71 75,78 78,88 C 81,98 79,112 72,124 Z" fill="rgba(24,12,2,0.60)"/>
+      <path d="M 56,70 C 52,64 50,57 53,52 C 56,47 63,46 68,50 C 72,54 73,60 71,67 C 69,73 63,73 56,70 Z" fill="rgba(24,12,2,0.60)"/>
+      <path d="M 78,164 C 72,178 65,194 60,205" stroke="rgba(24,12,2,0.58)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 88,168 C 84,182 82,196 80,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <path d="M 72,148 C 64,142 54,134 46,128 C 44,126 44,122 48,120 C 52,118 56,120 60,125 C 65,131 70,140 78,148" stroke="rgba(24,12,2,0.58)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 128,168 C 126,184 124,198 122,210" stroke="rgba(24,12,2,0.55)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 142,164 C 142,180 140,194 138,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <path d="M 158,135 C 165,128 174,124 180,128 C 186,132 186,140 180,145 C 174,150 165,148 160,142" fill="rgba(24,12,2,0.52)"/>
+      <path d="M 98,108 C 94,98 93,86 96,76 C 99,67 107,62 114,64 C 122,66 126,74 124,84 C 122,94 116,102 108,108 Z" fill="rgba(24,12,2,0.65)"/>
+      <circle cx="113" cy="63" r="9" fill="rgba(24,12,2,0.65)"/>
+      <path d="M 108,55 C 106,48 108,42 113,40 C 118,38 122,42 120,48" stroke="rgba(24,12,2,0.58)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <path d="M 118,80 C 124,74 132,68 140,65 C 144,63 147,65 147,68 C 147,72 143,75 138,76 C 132,78 124,82 120,88" fill="none" stroke="rgba(24,12,2,0.62)" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="147" cy="67" r="4.5" fill="rgba(24,12,2,0.60)"/>
+      <radialGradient id="vign3" cx="50%" cy="50%" r="50%"><stop offset="60%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(60,20,100,0.35)"/></radialGradient>
+      <circle cx="130" cy="130" r="127" fill="url(#vign3)"/>
+    </g>
+    <polygon points="128,122 192,78 230,50 260,0 260,260 250,172 205,148"
+      fill="none" stroke="rgba(160,90,255,0.55)" stroke-width="1.5"
+      filter="url(#gsh3)" clip-path="url(#cp3)"/>
+  </svg>
+
+  <!-- SHARD 4 – bottom-right (between C and D) -->
+  <svg class="shard-svg hidden" id="sh4" viewBox="0 0 260 260">
+    <defs>
+      <clipPath id="cp4"><polygon points="128,122 205,148 250,172 260,260 148,252 118,198"/></clipPath>
+      <radialGradient id="rg4" cx="38%" cy="34%" r="70%">
+        <stop offset="0%"  stop-color="#d4962c"/>
+        <stop offset="35%" stop-color="#a06818"/>
+        <stop offset="75%" stop-color="#6b3f08"/>
+        <stop offset="100%" stop-color="#3a1e02"/>
+      </radialGradient>
+      <filter id="gsh4"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g clip-path="url(#cp4)">
+      <circle cx="130" cy="130" r="127" fill="url(#rg4)"/>
+      <circle cx="130" cy="130" r="124" fill="none" stroke="rgba(210,158,42,0.55)" stroke-width="3.5"/>
+      <circle cx="130" cy="130" r="118" fill="none" stroke="rgba(160,110,28,0.3)" stroke-width="1"/>
+      <path id="rimArc4" d="M 26,130 A 104,104 0 1,1 234,130" fill="none"/>
+      <text font-family="Cinzel,Georgia,serif" font-size="9.5" fill="rgba(32,16,4,0.75)" letter-spacing="3.5">
+        <textPath href="#rimArc4" startOffset="2%">KVRFVRSTENS MAXIMILIANS I · CHVRF. V. BAIERN</textPath>
+      </text>
+      <rect x="74" y="172" width="112" height="22" rx="3" fill="rgba(28,14,2,0.55)"/>
+      <text x="130" y="186" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="rgba(180,130,20,0.6)" letter-spacing="2">ERRICHTET · 1839</text>
+      <path d="M 72,162 C 66,150 64,135 68,120 C 72,106 84,97 97,93 C 110,89 126,91 138,97 C 152,104 160,118 158,134 C 156,148 146,160 130,166 C 114,172 84,172 72,162 Z" fill="rgba(24,12,2,0.62)"/>
+      <path d="M 78,164 C 72,178 65,194 60,205" stroke="rgba(24,12,2,0.58)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 88,168 C 84,182 82,196 80,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <path d="M 128,168 C 126,184 124,198 122,210" stroke="rgba(24,12,2,0.55)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 142,164 C 142,180 140,194 138,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <path d="M 158,135 C 165,128 174,124 180,128 C 186,132 186,140 180,145 C 174,150 165,148 160,142" fill="rgba(24,12,2,0.52)"/>
+      <radialGradient id="vign4" cx="50%" cy="50%" r="50%"><stop offset="60%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(60,20,100,0.35)"/></radialGradient>
+      <circle cx="130" cy="130" r="127" fill="url(#vign4)"/>
+    </g>
+    <polygon points="128,122 205,148 250,172 260,260 148,252 118,198"
+      fill="none" stroke="rgba(160,90,255,0.55)" stroke-width="1.5"
+      filter="url(#gsh4)" clip-path="url(#cp4)"/>
+  </svg>
+
+  <!-- SHARD 5 – bottom-left (between D and E) -->
+  <svg class="shard-svg hidden" id="sh5" viewBox="0 0 260 260">
+    <defs>
+      <clipPath id="cp5"><polygon points="128,122 118,198 148,252 0,260 14,195 42,215 78,238"/></clipPath>
+      <radialGradient id="rg5" cx="38%" cy="34%" r="70%">
+        <stop offset="0%"  stop-color="#d4962c"/>
+        <stop offset="35%" stop-color="#a06818"/>
+        <stop offset="75%" stop-color="#6b3f08"/>
+        <stop offset="100%" stop-color="#3a1e02"/>
+      </radialGradient>
+      <filter id="gsh5"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g clip-path="url(#cp5)">
+      <circle cx="130" cy="130" r="127" fill="url(#rg5)"/>
+      <circle cx="130" cy="130" r="124" fill="none" stroke="rgba(210,158,42,0.55)" stroke-width="3.5"/>
+      <circle cx="130" cy="130" r="118" fill="none" stroke="rgba(160,110,28,0.3)" stroke-width="1"/>
+      <path id="rimArc5" d="M 26,130 A 104,104 0 1,1 234,130" fill="none"/>
+      <text font-family="Cinzel,Georgia,serif" font-size="9.5" fill="rgba(32,16,4,0.75)" letter-spacing="3.5">
+        <textPath href="#rimArc5" startOffset="2%">KVRFVRSTENS MAXIMILIANS I · CHVRF. V. BAIERN</textPath>
+      </text>
+      <rect x="74" y="172" width="112" height="22" rx="3" fill="rgba(28,14,2,0.55)"/>
+      <text x="130" y="186" text-anchor="middle" font-family="Cinzel,serif" font-size="6.5" fill="rgba(180,130,20,0.6)" letter-spacing="2">ERRICHTET · 1839</text>
+      <path d="M 72,162 C 66,150 64,135 68,120 C 72,106 84,97 97,93 C 110,89 126,91 138,97 C 152,104 160,118 158,134 C 156,148 146,160 130,166 C 114,172 84,172 72,162 Z" fill="rgba(24,12,2,0.62)"/>
+      <path d="M 70,128 C 64,116 60,102 56,92 C 53,84 52,76 56,70 C 58,65 63,65 68,68 C 73,71 75,78 78,88 C 81,98 79,112 72,124 Z" fill="rgba(24,12,2,0.60)"/>
+      <path d="M 56,70 C 52,64 50,57 53,52 C 56,47 63,46 68,50 C 72,54 73,60 71,67 C 69,73 63,73 56,70 Z" fill="rgba(24,12,2,0.60)"/>
+      <path d="M 78,164 C 72,178 65,194 60,205" stroke="rgba(24,12,2,0.58)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 88,168 C 84,182 82,196 80,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <path d="M 128,168 C 126,184 124,198 122,210" stroke="rgba(24,12,2,0.55)" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <path d="M 142,164 C 142,180 140,194 138,208" stroke="rgba(24,12,2,0.55)" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+      <radialGradient id="vign5" cx="50%" cy="50%" r="50%"><stop offset="60%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(60,20,100,0.35)"/></radialGradient>
+      <circle cx="130" cy="130" r="127" fill="url(#vign5)"/>
+    </g>
+    <polygon points="128,122 118,198 148,252 0,260 14,195 42,215 78,238"
+      fill="none" stroke="rgba(160,90,255,0.55)" stroke-width="1.5"
+      filter="url(#gsh5)" clip-path="url(#cp5)"/>
+  </svg>
+
+  <!-- crack lines overlay (always visible) -->
+  <svg class="crack-overlay" viewBox="0 0 260 260">
+    <defs>
+      <filter id="cglow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="1.8" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <clipPath id="coinMask"><circle cx="130" cy="130" r="126"/></clipPath>
+    </defs>
+    <g clip-path="url(#coinMask)">
+      <!-- thick dark crack fill -->
+      <g stroke="#080810" stroke-width="3.5" fill="none" stroke-linecap="round">
+        <path d="M 128,122 L 108,8"/>
+        <path d="M 128,122 L 230,50"/>
+        <path d="M 128,122 L 250,172"/>
+        <path d="M 128,122 L 148,252"/>
+        <path d="M 128,122 L 14,195"/>
+      </g>
+      <!-- thin purple glow on cracks -->
+      <g stroke="rgba(140,70,240,0.45)" stroke-width="0.9" fill="none" stroke-linecap="round" filter="url(#cglow)">
+        <path d="M 128,122 L 108,8"/>
+        <path d="M 128,122 L 230,50"/>
+        <path d="M 128,122 L 250,172"/>
+        <path d="M 128,122 L 148,252"/>
+        <path d="M 128,122 L 14,195"/>
+      </g>
+      <!-- junction sparkle -->
+      <circle cx="128" cy="122" r="3" fill="rgba(180,110,255,0.7)" filter="url(#cglow)"/>
+    </g>
+  </svg>
+
+  <!-- dark background for unrevealed area, clipped to circle -->
+  <svg id="darkBg" viewBox="0 0 260 260" style="position:absolute;inset:0;width:260px;height:260px;z-index:1;pointer-events:none;">
+    <circle cx="130" cy="130" r="126" fill="#0a0812"/>
+    <circle cx="130" cy="130" r="126" fill="none" stroke="rgba(80,40,140,0.4)" stroke-width="2"/>
+  </svg>
+
+</div><!-- end coin-stage -->
+
+<div class="controls">
+  <div class="status">Schnipsel enthüllt: <em id="cnt">0</em> / 5</div>
+  <div class="btn-grid">
+    <button class="btn" id="b1" onclick="reveal(1,3)">Station 1 lösen</button>
+    <button class="btn" id="b2" onclick="reveal(2,1)">Station 2 lösen</button>
+    <button class="btn" id="b3" onclick="reveal(3,5)">Station 3 lösen</button>
+    <button class="btn" id="b4" onclick="reveal(4,2)">Station 4 lösen</button>
+    <button class="btn btn5" id="b5" onclick="reveal(5,4)">Station 5 lösen</button>
+  </div>
+  <button class="reset" onclick="resetAll()">↺ zurücksetzen</button>
+</div>
+
+<script>
+  let count = 0;
+  const done = {};
+
+  function reveal(station, shard) {
+    if (done[station]) return;
+    done[station] = true;
+    count++;
+    document.getElementById('cnt').textContent = count;
+    if (count >= 5) document.getElementById('darkBg').style.opacity = '0';
+
+    const el = document.getElementById('sh' + shard);
+    el.classList.remove('hidden');
+    el.classList.add('visible');
+
+    // brief flash
+    el.style.filter = 'brightness(2) drop-shadow(0 0 14px rgba(200,140,255,0.9))';
+    setTimeout(() => { el.style.filter = ''; }, 700);
+
+    const btn = document.getElementById('b' + station);
+    btn.classList.add('done');
+    btn.textContent = '✓ Station ' + station;
+  }
+
+  function resetAll() {
+    count = 0; Object.keys(done).forEach(k => delete done[k]);
+    document.getElementById('cnt').textContent = 0;
+    document.getElementById('darkBg').style.opacity = '1';
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById('sh' + i).classList.remove('visible');
+      document.getElementById('sh' + i).classList.add('hidden');
+      const b = document.getElementById('b' + i);
+      b.classList.remove('done');
+      b.textContent = 'Station ' + i + ' lösen';
+    }
+  }
+</script>
+</body>
+</html>

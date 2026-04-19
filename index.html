@@ -90,7 +90,142 @@
     <div id="view-org"    class="view"></div>
   </div>
   <script>
-    // placeholder — wird in späteren Tasks befüllt
+    // ── KONFIGURATION ──────────────────────────────────────────
+    const PIN = '1985';
+
+    // Scherben-Reihenfolge: Station X enthüllt Scherbe Y (bewusst nicht 1:1)
+    // Station: 1→sh3, 2→sh1, 3→sh5, 4→sh2, 5→sh4
+    const SHARD_MAP = { 1:3, 2:1, 3:5, 4:2, 5:4 };
+
+    const STATIONS = [
+      {
+        id: 1,
+        ort: 'Zuhause',
+        titel: 'Der Geburts-Code',
+        mechanismus: 'Caesar-Chiffre',
+        rätseltext: `Berechne die Quersumme des Jahres, in dem du das Licht der Welt erblicktest.
+Verschiebe jeden Buchstaben dieser Botschaft um diese Zahl Stellen RÜCKWÄRTS im Alphabet (bei A → weiter bei Z):
+
+A · X · Z · E · X · R`,
+        mechanismus_erkl: `Quersumme von 1985 = 1+9+8+5 = 23. Jeden Buchstaben 23 Stellen rückwärts verschieben (= 3 Stellen vorwärts, da 26-23=3).
+A→D, X→A, Z→C … Ergibt DACHAU.`,
+        lösung: 'DACHAU',
+        nächster_ort: 'Dachauer Altstadt, Untermarkt',
+        hinweis: 'Denk an dein Geburtsjahr. Addiere alle vier Ziffern.',
+        hinweis2: 'Die Quersumme von 1985 ist 23. Verschiebe jeden Buchstaben 23 Stellen zurück.',
+      },
+      {
+        id: 2,
+        ort: 'Dachauer Altstadt · Untermarkt',
+        titel: 'Das Wappentier-Telefon',
+        mechanismus: 'Telefontasten-Chiffre',
+        rätseltext: `Das bayerische Wappentier hat 4 Buchstaben — genau wie der Versatz.
+
+Auf einer Telefontastatur gilt: Taste 2 = ABC, 3 = DEF, 4 = GHI, 5 = JKL, 6 = MNO, 7 = PQRS, 8 = TUV, 9 = WXYZ.
+Verschiebe jede Taste um so viele Stellen weiter, wie das Wappentier Buchstaben hat.
+
+4¹ · 5² · 9³ · 7² · 5³ · 7¹ · 5¹ · 7² · 4³ · 2¹`,
+        mechanismus_erkl: `LÖWE = 4 Buchstaben → Versatz 4. Neue Belegung: 2=EFG, 3=HIJ, 4=KLM, 5=NOP, 6=QRS, 7=TUVW, 8=XYZ, 9=ABCD.
+4¹=K, 5²=O, 9³=C, 7²=U, 5³=P... Vollständig ergibt sich ZAUNKOENIG → Café Zaunkönig.`,
+        lösung: 'ZAUNKOENIG',
+        nächster_ort: 'Café Zaunkönig, Augsburger Str. 9, Dachau',
+        hinweis: 'Das bayerische Wappentier: ein Tier mit 4 Buchstaben. Diese Zahl verschiebt die Tastatur.',
+        hinweis2: 'LÖWE hat 4 Buchstaben. Taste 2 wird zu EFG, Taste 9 wird zu ABCD. Dann: 4¹ = erster Buchstabe auf Taste 4 = K.',
+      },
+      {
+        id: 3,
+        ort: 'Café Zaunkönig · Augsburger Str. 9',
+        titel: 'Die Kaffeehausbotschaft',
+        mechanismus: 'Steganographie (Anfangsbuchstaben)',
+        rätseltext: `Etwas an diesen Zeilen stimmt nicht. Findest du das Muster?
+
+Alle Wege beginnen mit einem einzigen Schritt,
+manchmal weiß man nicht, wohin er führt,
+plötzlich öffnet sich ein Horizont,
+etwas Neues wartet, das man noch nicht kennt.
+Ruhig fließt das Leben, wie ein Fluss im Frühjahr,
+Brücken bauen wir gemeinsam, Tag für Tag,
+rückblickend sieht man, was man alles schon geschafft,
+und doch liegt noch so viel Schönes vor uns da.
+Ein Augenblick des Glücks – halt ihn fest.
+Charmant und leise flüstert dir der Wind:
+Komm, geh noch einen Schritt mit mir.
+Eines bleibt gewiss: du bist nicht allein.`,
+        mechanismus_erkl: `Die Anfangsbuchstaben jeder Zeile ergeben: A-M-P-E-R-B-R-U-E-C-K-E = AMPERBRUECKE → Amperbrücke Mitterndorf.`,
+        lösung: 'AMPERBRUECKE',
+        nächster_ort: 'Amperbrücke Mitterndorf, Heinrich-Nicolaus-Str.',
+        hinweis: 'Schau dir die Zeilen genau an — nicht was sie bedeuten, sondern wie sie anfangen.',
+        hinweis2: 'Lies nur die ersten Buchstaben jeder Zeile von oben nach unten.',
+      },
+      {
+        id: 4,
+        ort: 'Amperbrücke Mitterndorf',
+        titel: 'Die Zahlensprache',
+        mechanismus: 'Wissensfragen → Zahlen → Alphabet (A=1)',
+        rätseltext: `Beantworte die Fragen. Jede Antwort ist eine Zahl.
+A=1, B=2, C=3 … Z=26. Welches Wort ergibt sich?
+
+1. Wie viele Töne hat eine Dur-Tonleiter?
+2. Wie viele Finger hat eine Hand?
+3. Wie viele Monate hat ein Jahr?
+4. Wie viele Nasen hat ein Mensch?
+5. Wie viele Zehen hat ein Mensch?
+6. Wie viele Minuten hat eine Viertelstunde?`,
+        mechanismus_erkl: `7=G, 5=E, 12=L, 1=A, 20=T, 15=O → GELATO → La Veneziana Eisdiele, Bahnhofstr. 10, Dachau.`,
+        lösung: 'GELATO',
+        nächster_ort: 'La Veneziana Eisdiele, Bahnhofstr. 10, Dachau',
+        hinweis: 'Jede Antwort ist eine Zahl zwischen 1 und 26. A=1, Z=26.',
+        hinweis2: 'Die Antworten: 7, 5, 12, 1, 20, 15. Schau nach, welche Buchstaben diese Zahlen ergeben.',
+      },
+      {
+        id: 5,
+        ort: 'La Veneziana · Bahnhofstr. 10 · Dachau',
+        titel: 'Die Vigenère-Falle',
+        mechanismus: 'Vigenère-Chiffre',
+        rätseltext: `Du hast 4 Orte entdeckt. Du hast 4 Rätsel gelöst.
+Der Schlüssel war die ganze Zeit bei dir.
+
+[GEHEIMTEXT — wird automatisch berechnet]`,
+        mechanismus_erkl: `Schlüssel = Anfangsbuchstaben aller 4 Vorgänger-Lösungen: D(achau) + Z(aunkoenig) + A(mperbruecke) + G(elato) = DZAG.
+Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Geheimtext.`,
+        lösung: 'KURFUERSTMAXIMILIAN',
+        nächster_ort: 'Restaurant Kurfürst Maximilian · La Trattoria by Giovanni, Waisenhausstr. 63, München',
+        hinweis: 'Der Schlüssel besteht aus den Anfangsbuchstaben der 4 Orte, die du bisher besucht hast.',
+        hinweis2: 'DZAG = D(achau) + Z(aunkönig) + A(mperbrücke) + G(elato). Entschlüssle den Text mit diesem Schlüssel.',
+      },
+    ];
+
+    // ── VIGENÈRE UTILITY ─────────────────────────────────────────
+    function vigenereEncrypt(plaintext, key) {
+      const pt = plaintext.toUpperCase().replace(/[^A-Z]/g, '');
+      const k  = key.toUpperCase().replace(/[^A-Z]/g, '');
+      return pt.split('').map((ch, i) => {
+        const shift = k.charCodeAt(i % k.length) - 65;
+        return String.fromCharCode((ch.charCodeAt(0) - 65 + shift) % 26 + 65);
+      }).join('');
+    }
+
+    // Geheimtext für Station 5 automatisch berechnen
+    const VIG_KEY        = 'DZAG';
+    const VIG_PLAIN      = 'KURFUERSTMAXIMILIAN';
+    const VIG_CIPHER     = vigenereEncrypt(VIG_PLAIN, VIG_KEY);
+    // Geheimtext in Rätseltext einsetzen
+    STATIONS[4].rätseltext = STATIONS[4].rätseltext.replace(
+      '[GEHEIMTEXT — wird automatisch berechnet]',
+      VIG_CIPHER.match(/.{1,4}/g).join(' · ')
+    );
+
+    // ── ANTWORT-NORMALISIERUNG ───────────────────────────────────
+    function normalizeAnswer(str) {
+      return str.toUpperCase()
+        .replace(/Ä/g,'AE').replace(/Ö/g,'OE').replace(/Ü/g,'UE').replace(/ß/g,'SS')
+        .replace(/[^A-Z]/g,'');
+    }
+
+    function checkAnswer(stationId, input) {
+      const station = STATIONS.find(s => s.id === stationId);
+      return normalizeAnswer(input) === normalizeAnswer(station.lösung);
+    }
   </script>
 </body>
 </html>
