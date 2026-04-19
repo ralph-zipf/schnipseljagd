@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schnipseljagd · 02.05.2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS CUSTOM PROPERTIES ── */
+    :root {
+      --bg:         #07070f;
+      --bg2:        #0e0c1c;
+      --bg3:        #16122a;
+      --border:     rgba(120, 70, 220, 0.22);
+      --border-act: rgba(0, 200, 220, 0.45);
+      --gold:       #d4962c;
+      --gold-light: #f0c060;
+      --purple:     #a070e0;
+      --purple-dim: #5a3898;
+      --teal:       #40c8d8;
+      --text:       #e0d8f8;
+      --text-dim:   #7060a8;
+      --text-muted: #3a2a58;
+      --font-head:  'Cinzel', Georgia, serif;
+      --font-body:  'Crimson Text', Georgia, serif;
+      --r:          12px;
+    }
+
+    /* ── RESET + BASE ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      min-height: 100%;
+      background-image:
+        radial-gradient(ellipse at 25% 15%, rgba(100,50,180,0.13) 0%, transparent 55%),
+        radial-gradient(ellipse at 75% 85%, rgba(0,140,170,0.07) 0%, transparent 50%);
+    }
+
+    /* ── APP SHELL ── */
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 0 80px;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      text-align: center;
+      padding: 28px 20px 16px;
+    }
+    .app-title {
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      background: linear-gradient(120deg, #c890f8 0%, #78c8e8 45%, #e8b040 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .app-date {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-family: var(--font-head);
+    }
+
+    /* ── VIEWS: show/hide ── */
+    .view { display: none; }
+    .view.active { display: block; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="app-title">Schnipseljagd</div>
+      <div class="app-date">02 · Mai · 2026</div>
+    </header>
+
+    <div id="view-main"   class="view active"></div>
+    <div id="view-detail" class="view"></div>
+    <div id="view-org"    class="view"></div>
+  </div>
+  <script>
+    // placeholder — wird in späteren Tasks befüllt
+  </script>
+</body>
+</html>
