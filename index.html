@@ -860,7 +860,21 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
     }
 
     function resetApp() {
-      if (!confirm('App komplett zurücksetzen?\n\nAlle gelösten Stationen und die Checkliste werden gelöscht.')) return;
+      var btn = document.getElementById('resetBtn');
+      if (!btn) return;
+      if (btn.dataset.confirmed !== '1') {
+        btn.dataset.confirmed = '1';
+        btn.textContent = '⚠ Wirklich zurücksetzen? Nochmal tippen zum Bestätigen';
+        btn.style.background = 'rgba(160,30,30,0.35)';
+        setTimeout(function() {
+          if (btn.dataset.confirmed === '1') {
+            btn.dataset.confirmed = '0';
+            btn.textContent = '↺ App komplett zurücksetzen';
+            btn.style.background = '';
+          }
+        }, 3000);
+        return;
+      }
       state.solved = [];
       state.checklist = {};
       saveState();
@@ -941,7 +955,7 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
         +     'Gelöst: <strong style="color:var(--purple)">' + state.solved.length + '</strong> / 5 Stationen '
         +     solvedNames
         +   '</div>'
-        +   '<button class="reset-btn" onclick="resetApp()">'
+        +   '<button id="resetBtn" class="reset-btn" onclick="resetApp()">'
         +     '↺ App komplett zurücksetzen'
         +   '</button>'
         + '</div>'
