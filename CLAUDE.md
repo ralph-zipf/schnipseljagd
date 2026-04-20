@@ -11,7 +11,7 @@ Schnipseljagt/
 ├── CLAUDE.md                    ← diese Datei
 ├── README.md                    ← Deployment-Anleitung
 ├── index.html                   ← die komplette App (HTML + CSS + JS)
-├── Kurfürst_Maximilian_Münze.png ← Münzbild (RGBA, 2380×1290px)
+├── coin.png                     ← Münzbild (RGBA, 2380×1290px, umbenannt für GitHub Pages)
 ├── _preview_coin.html           ← Standalone-Vorschau für Coin-Design-Iteration
 └── docs/
     └── superpowers/
@@ -50,11 +50,19 @@ Schnipseljagt/
 
 Vigenère-Schlüssel DZAG = Anfangsbuchstaben der 4 Vorgänger-Lösungen.
 
+## Deployment
+
+- **URL:** https://ralph-zipf.github.io/schnipseljagd/
+- **Repo:** https://github.com/ralph-zipf/schnipseljagd
+- Push auf `main` → GitHub Pages aktualisiert automatisch (~1 Min.)
+
 ## Wie gearbeitet werden soll
 
 - Coin-Design-Änderungen immer zuerst in `_preview_coin.html` testen, dann in `index.html` übertragen
-- PNG-Messung: Münzzentrum (1189.5, 644.5), Radius 644px; SVG-Mapping: scale=97/644≈0.1506, image x=-79 y=3 width=358 height=194
+- PNG-Messung: Münzzentrum (1189.5, 644.5), Radius 644px; SVG-Mapping: scale=96/644≈0.149, image x=-79 y=3 width=358 height=194
 - Bei Änderungen an der Münze: CSS `filter:drop-shadow` auf `.coin-stage` vermeiden → `box-shadow` verwenden
+- `confirm()` nicht verwenden (wird auf GitHub Pages geblockt) → stattdessen Doppel-Tap-Muster (siehe `resetApp()`)
+- Neue PNG-Dateien immer ohne Umlaute benennen
 
 ## Wichtige JS-Konstanten
 
