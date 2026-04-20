@@ -1003,13 +1003,16 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
         const ncls = solved ? 'snum-solved' : active ? 'snum-active' : 'snum-locked';
         const right = solved
           ? `<div class="scheck">✓</div>`
+          : locked ? `<div class="sarrow" style="color:var(--text-muted)">🔒</div>`
           : `<div class="sarrow">›</div>`;
+        const displayName = locked ? '??? · · ·' : s.ort;
+        const displayMeta = locked ? 'Noch nicht freigeschaltet' : s.titel;
         return `
-          <div class="station-card ${cls}" onclick="openStation(${s.id})">
+          <div class="station-card ${cls}" onclick="${locked ? '' : `openStation(${s.id})`}">
             <div class="snum ${ncls}">${s.id}</div>
             <div class="sinfo">
-              <div class="sname">${s.ort}</div>
-              <div class="smeta">${s.titel}</div>
+              <div class="sname">${displayName}</div>
+              <div class="smeta">${displayMeta}</div>
             </div>
             ${right}
           </div>`;
