@@ -19,8 +19,8 @@
       --purple-dim: #5a3898;
       --teal:       #40c8d8;
       --text:       #e0d8f8;
-      --text-dim:   #7060a8;
-      --text-muted: #3a2a58;
+      --text-dim:   #9a8cc0;
+      --text-muted: #6a5898;
       --font-head:  'Cinzel', Georgia, serif;
       --font-body:  'Crimson Text', Georgia, serif;
       --r:          12px;
@@ -124,7 +124,7 @@
     .stations-section { padding: 0 16px; }
     .stations-heading {
       font-family: var(--font-head);
-      font-size: 9px; letter-spacing: 3px; color: var(--text-muted);
+      font-size: 9px; letter-spacing: 3px; color: var(--text-dim);
       text-transform: uppercase; margin-bottom: 12px; padding-left: 4px;
     }
     .station-card {
@@ -165,8 +165,8 @@
     .sname { font-family: var(--font-head); font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .station-card.active .sname  { color: var(--teal); }
     .station-card.locked .sname  { color: var(--text-muted); }
-    .smeta { font-size: 11px; color: var(--text-dim); font-style: italic; }
-    .station-card.active .smeta  { color: #3a8898; }
+    .smeta { font-size: 11px; color: #8898b0; font-style: italic; }
+    .station-card.active .smeta  { color: #4aa8b8; }
 
     .scheck {
       width: 18px; height: 18px; border-radius: 50%;
@@ -226,7 +226,7 @@
       background: rgba(8,5,18,0.85); border: 1px solid rgba(130,60,220,0.22);
       border-radius: 10px; padding: 14px; margin-bottom: 12px;
     }
-    .answer-label { font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 8px; }
+    .answer-label { font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 8px; }
     .answer-input {
       width: 100%; background: rgba(25,16,48,0.85); border: 1px solid rgba(90,55,170,0.35);
       border-radius: 7px; padding: 10px 12px; color: var(--text);
@@ -267,7 +267,7 @@
     .hint-text {
       margin-top: 8px; padding: 10px 12px;
       background: rgba(40,28,70,0.5); border-radius: 7px;
-      font-size: 12px; color: #9080c0; font-style: italic;
+      font-size: 12px; color: #b0a0d8; font-style: italic;
       display: none;
     }
     .hint-text.show { display: block; }
@@ -355,7 +355,7 @@
     }
     .org-section-title {
       font-family: var(--font-head); font-size: 9px; letter-spacing: 2px;
-      color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
+      color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px;
     }
 
     /* Org-Stationen */
@@ -395,8 +395,19 @@
       border-radius: 8px; padding: 12px; margin-top: 8px;
     }
     .vig-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-    .vig-label { font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-muted); }
+    .vig-label { font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-dim); }
     .vig-val { font-family: var(--font-head); font-size: 13px; letter-spacing: 3px; color: var(--teal); word-break: break-all; }
+
+    /* Reset-Button */
+    .reset-btn {
+      width: 100%; margin-top: 12px; padding: 11px;
+      background: rgba(120,20,20,0.2); border: 1px solid rgba(200,60,60,0.35);
+      border-radius: 9px; color: #e08080;
+      font-family: var(--font-head); font-size: 10px; letter-spacing: 2px;
+      cursor: pointer; text-align: center; transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .reset-btn:active { background: rgba(150,25,25,0.35); }
 
     /* Druck-Ansicht */
     @media print {
@@ -848,6 +859,15 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
       }
     }
 
+    function resetApp() {
+      if (!confirm('App komplett zurücksetzen?\n\nAlle gelösten Stationen und die Checkliste werden gelöscht.')) return;
+      state.solved = [];
+      state.checklist = {};
+      saveState();
+      renderOrg();
+      renderMain();
+    }
+
     function exitOrg() {
       state.orgMode = false;
       document.getElementById('lockBtn').textContent = '🔒';
@@ -921,9 +941,8 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
         +     'Gelöst: <strong style="color:var(--purple)">' + state.solved.length + '</strong> / 5 Stationen '
         +     solvedNames
         +   '</div>'
-        +   '<button onclick="if(confirm(\'Fortschritt wirklich zurücksetzen?\')){state.solved=[];saveState();renderOrg();renderMain();}"'
-        +     ' style="margin-top:10px;padding:6px 12px;border-radius:6px;border:1px solid rgba(80,40,120,0.3);background:transparent;color:var(--text-muted);font-family:var(--font-head);font-size:9px;letter-spacing:1px;cursor:pointer;">'
-        +     '↺ Fortschritt zurücksetzen'
+        +   '<button class="reset-btn" onclick="resetApp()">'
+        +     '↺ App komplett zurücksetzen'
         +   '</button>'
         + '</div>'
 
