@@ -281,6 +281,135 @@
       font-size: 12px; color: var(--text-dim); font-style: italic;
       text-align: center; padding: 0 8px;
     }
+
+    /* ── ORG LOCK BUTTON ── */
+    .lock-btn {
+      position: fixed; bottom: 20px; right: 20px; z-index: 100;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(18,12,32,0.85); border: 1px solid rgba(70,45,120,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      transition: border-color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .lock-btn.unlocked { border-color: rgba(0,200,220,0.5); }
+
+    /* ── PIN MODAL ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(4,3,10,0.88);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal {
+      background: linear-gradient(135deg, #100d22, #0c0a1a);
+      border: 1px solid rgba(110,60,210,0.35);
+      border-radius: 18px; padding: 28px 24px; width: 100%; max-width: 340px;
+      box-shadow: 0 0 40px rgba(100,50,200,0.2);
+    }
+    .modal h3 {
+      font-family: var(--font-head); font-size: 14px; letter-spacing: 3px;
+      text-align: center; color: var(--text); margin-bottom: 6px; font-weight: 700;
+    }
+    .modal-sub { font-size: 12px; color: var(--text-dim); text-align: center; margin-bottom: 20px; font-style: italic; }
+    .pin-input {
+      width: 100%; background: rgba(25,16,48,0.9); border: 1px solid rgba(90,55,170,0.4);
+      border-radius: 8px; padding: 12px; color: var(--text);
+      font-family: var(--font-head); font-size: 22px; letter-spacing: 8px; text-align: center;
+      outline: none; margin-bottom: 10px;
+      -webkit-appearance: none; appearance: none;
+    }
+    .pin-error { color: #e07070; font-size: 11px; text-align: center; margin-bottom: 10px; display: none; }
+    .pin-error.show { display: block; }
+    .modal-btn {
+      width: 100%; padding: 12px; border-radius: 8px;
+      background: linear-gradient(135deg, rgba(80,30,170,0.45), rgba(0,110,135,0.3));
+      border: 1px solid rgba(120,60,230,0.45); color: var(--purple);
+      font-family: var(--font-head); font-size: 11px; letter-spacing: 2px;
+      cursor: pointer; margin-bottom: 8px; text-align: center;
+      transition: all 0.2s;
+    }
+    .modal-close {
+      width: 100%; padding: 8px; background: transparent;
+      border: 1px solid rgba(50,35,80,0.3); border-radius: 8px;
+      color: var(--text-muted); font-family: var(--font-head); font-size: 10px;
+      letter-spacing: 1px; cursor: pointer; text-align: center;
+    }
+
+    /* ── ORG VIEW ── */
+    .org-wrap { padding: 0 16px 20px; }
+    .org-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 14px; }
+    .org-title { font-family: var(--font-head); font-size: 12px; letter-spacing: 3px; color: var(--teal); text-transform: uppercase; }
+    .org-exit { font-family: var(--font-head); font-size: 10px; color: var(--text-muted); cursor: pointer; letter-spacing: 1px; }
+
+    .org-section {
+      background: rgba(14,10,28,0.9); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 14px; margin-bottom: 14px;
+    }
+    .org-section-title {
+      font-family: var(--font-head); font-size: 9px; letter-spacing: 2px;
+      color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    /* Org-Stationen */
+    .org-station { margin-bottom: 16px; border-bottom: 1px solid rgba(60,40,100,0.25); padding-bottom: 14px; }
+    .org-station:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .org-station-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .org-station-name { font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--text); }
+    .org-station-mech { font-size: 11px; color: var(--text-dim); font-style: italic; }
+    .solution-pill {
+      background: rgba(80,30,160,0.3); border: 1px solid rgba(140,65,255,0.4);
+      border-radius: 6px; padding: 4px 10px;
+      font-family: var(--font-head); font-size: 11px; letter-spacing: 2px; color: #c090f8;
+      display: inline-block; margin: 4px 0 6px;
+    }
+    .org-detail { font-size: 12px; color: #7060a0; line-height: 1.6; }
+
+    /* Checkliste */
+    .checklist-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid rgba(40,28,70,0.3); cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .cl-check {
+      width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+      border: 1px solid rgba(90,55,160,0.4); background: rgba(20,14,40,0.6);
+      display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--purple);
+      transition: all 0.2s;
+    }
+    .cl-check.done { background: rgba(70,25,150,0.35); border-color: rgba(140,70,255,0.5); }
+    .cl-label { font-size: 13px; color: var(--text); line-height: 1.4; }
+    .cl-label.done { text-decoration: line-through; color: var(--text-muted); }
+
+    /* Vigenère-Anzeige */
+    .vigenere-box {
+      background: rgba(8,5,18,0.9); border: 1px solid rgba(0,160,180,0.25);
+      border-radius: 8px; padding: 12px; margin-top: 8px;
+    }
+    .vig-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .vig-label { font-family: var(--font-head); font-size: 8px; letter-spacing: 2px; color: var(--text-muted); }
+    .vig-val { font-family: var(--font-head); font-size: 13px; letter-spacing: 3px; color: var(--teal); word-break: break-all; }
+
+    /* Druck-Ansicht */
+    @media print {
+      body { background: white !important; color: black !important; }
+      body::before { display: none; }
+      .lock-btn, .modal-backdrop, .back-btn, .tab-row, .answer-section,
+      .check-btn, .feedback, .hint-section, .coin-section,
+      .stations-section, #view-org { display: none !important; }
+      .riddle-box { border: 1px solid #ccc !important; background: white !important; }
+      .riddle-box::before { color: #666 !important; background: white !important; }
+      .riddle-text { color: black !important; }
+      .detail-title { color: black !important; -webkit-text-fill-color: black !important; }
+      .detail-subtitle { color: #444 !important; }
+      .detail-badge { border: 1px solid #ccc !important; color: #444 !important; background: white !important; }
+      .app-title { -webkit-text-fill-color: black !important; color: black !important; }
+      .app-date { color: #444 !important; }
+      @page { margin: 15mm; }
+    }
   </style>
 </head>
 <body>
@@ -537,7 +666,15 @@
         <div id="detailContent"></div>
       </div>
     </div>
-    <div id="view-org"    class="view"></div>
+    <div id="view-org" class="view">
+      <div class="org-wrap">
+        <div class="org-header">
+          <div class="org-title">◈ Organisator</div>
+          <div class="org-exit" onclick="exitOrg()">✕ Beenden</div>
+        </div>
+        <div id="orgContent"></div>
+      </div>
+    </div>
   </div>
   <script>
     // ── KONFIGURATION ──────────────────────────────────────────
@@ -804,6 +941,143 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
       if (coinDark && state.solved.length >= 5) coinDark.style.opacity = '0';
     }
 
+    // ── ORGANISATOR-MODUS ────────────────────────────────────────
+    const CHECKLIST = [
+      'Rätselkarten drucken (5 Stück)',
+      'Rätselkarten laminieren oder in Schutzhülle',
+      'Station 1 vorbereiten (Zuhause)',
+      'Schnipsel an Stationen 2–5 hinterlegen',
+      'App-URL ans eigene Handy schicken',
+      'PIN merken: ' + PIN,
+      'Lösungen als Backup-Screenshot',
+      'Reservierung La Trattoria by Giovanni bestätigen',
+    ];
+
+    function toggleLock() {
+      if (state.orgMode) {
+        exitOrg(); return;
+      }
+      const modal = document.getElementById('pinModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+
+    function closePin() {
+      document.getElementById('pinModal').classList.add('hidden');
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').classList.remove('show');
+    }
+
+    function submitPin() {
+      const val = document.getElementById('pinInput').value;
+      if (val === PIN) {
+        state.orgMode = true;
+        closePin();
+        document.getElementById('lockBtn').textContent = '🔓';
+        document.getElementById('lockBtn').classList.add('unlocked');
+        renderOrg();
+        showView('org');
+      } else {
+        document.getElementById('pinError').classList.add('show');
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    }
+
+    function exitOrg() {
+      state.orgMode = false;
+      document.getElementById('lockBtn').textContent = '🔒';
+      document.getElementById('lockBtn').classList.remove('unlocked');
+      renderMain();
+    }
+
+    function toggleChecklist(idx) {
+      const key = 'cl_' + idx;
+      state.checklist[key] = !state.checklist[key];
+      saveState();
+      renderOrg();
+    }
+
+    function renderOrgStations() {
+      return STATIONS.map(function(s) {
+        return '<div class="org-station">'
+          + '<div class="org-station-head">'
+          + '<div class="org-station-name">' + s.id + '. ' + s.titel + '</div>'
+          + '<div class="org-station-mech">' + s.mechanismus + '</div>'
+          + '</div>'
+          + '<div class="org-detail" style="margin-bottom:4px;color:#5a4888;">' + s.ort + '</div>'
+          + '<div class="solution-pill">→ ' + s.lösung + '</div>'
+          + '<div class="org-detail">' + s.mechanismus_erkl + '</div>'
+          + '<div class="org-detail" style="margin-top:4px;color:#3a2858;">Nächster Ort: ' + (s.nächster_ort || '—') + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    function renderChecklistItems() {
+      return CHECKLIST.map(function(item, i) {
+        var done = !!state.checklist['cl_' + i];
+        var doneClass = done ? ' done' : '';
+        var checkMark = done ? '✓' : '';
+        return '<div class="checklist-item" onclick="toggleChecklist(' + i + ')">'
+          + '<div class="cl-check' + doneClass + '">' + checkMark + '</div>'
+          + '<div class="cl-label' + doneClass + '">' + item + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    function renderOrg() {
+      var vigKeyStr    = VIG_KEY;
+      var vigPlainStr  = VIG_PLAIN;
+      var vigCipherStr = VIG_CIPHER.match(/.{1,4}/g).join(' · ');
+      var solvedNames  = state.solved.length > 0
+        ? '— ' + state.solved.map(function(id) {
+            var s = STATIONS.find(function(s) { return s.id === id; });
+            return s ? s.titel : '';
+          }).join(', ')
+        : '';
+
+      document.getElementById('orgContent').innerHTML = ''
+        + '<div class="org-section">'
+        +   '<div class="org-section-title">◈ Stationen & Lösungen</div>'
+        +   renderOrgStations()
+        + '</div>'
+
+        + '<div class="org-section">'
+        +   '<div class="org-section-title">◈ Vigenère-Chiffre (Station 5)</div>'
+        +   '<div class="vigenere-box">'
+        +     '<div class="vig-row"><span class="vig-label">Schlüssel</span><span class="vig-val">' + vigKeyStr + '</span></div>'
+        +     '<div class="vig-row"><span class="vig-label">Klartext</span><span class="vig-val">' + vigPlainStr + '</span></div>'
+        +     '<div class="vig-row"><span class="vig-label">Geheimtext</span><span class="vig-val">' + vigCipherStr + '</span></div>'
+        +   '</div>'
+        + '</div>'
+
+        + '<div class="org-section">'
+        +   '<div class="org-section-title">◈ Aktueller Fortschritt</div>'
+        +   '<div style="font-size:13px;color:var(--text-dim);">'
+        +     'Gelöst: <strong style="color:var(--purple)">' + state.solved.length + '</strong> / 5 Stationen '
+        +     solvedNames
+        +   '</div>'
+        +   '<button onclick="if(confirm(\'Fortschritt wirklich zurücksetzen?\')){state.solved=[];saveState();renderOrg();renderMain();}"'
+        +     ' style="margin-top:10px;padding:6px 12px;border-radius:6px;border:1px solid rgba(80,40,120,0.3);background:transparent;color:var(--text-muted);font-family:var(--font-head);font-size:9px;letter-spacing:1px;cursor:pointer;">'
+        +     '↺ Fortschritt zurücksetzen'
+        +   '</button>'
+        + '</div>'
+
+        + '<div class="org-section">'
+        +   '<div class="org-section-title">◈ Checkliste Vorbereitung</div>'
+        +   renderChecklistItems()
+        + '</div>'
+
+        + '<div class="org-section">'
+        +   '<div class="org-section-title">◈ Rätselkarten drucken</div>'
+        +   '<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">'
+        +     'Zur Druck-Ansicht: Zurück → Station öffnen → Browser-Druckfunktion (⌘P / Strg+P)'
+        +   '</div>'
+        + '</div>';
+
+      showView('org');
+    }
+
     // ── HAUPTANSICHT RENDERN ─────────────────────────────────────
     function renderMain() {
       // Münze aktualisieren
@@ -850,5 +1124,22 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
     // App starten
     renderMain();
   </script>
+
+  <!-- Lock-Button (immer sichtbar) -->
+  <button class="lock-btn" id="lockBtn" onclick="toggleLock()" title="Organisator-Modus">🔒</button>
+
+  <!-- PIN-Modal -->
+  <div class="modal-backdrop hidden" id="pinModal">
+    <div class="modal">
+      <h3>◈ Organisator ◈</h3>
+      <p class="modal-sub">Bitte PIN eingeben</p>
+      <input class="pin-input" id="pinInput" type="password" inputmode="numeric"
+        maxlength="4" placeholder="· · · ·"
+        onkeydown="if(event.key==='Enter') submitPin()"/>
+      <div class="pin-error" id="pinError">Falscher PIN. Bitte nochmal.</div>
+      <button class="modal-btn" onclick="submitPin()">Entsperren</button>
+      <button class="modal-close" onclick="closePin()">Abbrechen</button>
+    </div>
+  </div>
 </body>
 </html>
