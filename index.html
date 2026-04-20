@@ -743,6 +743,9 @@ Klartext: KURFUERSTMAXIMILIAN. Mit Vigenère verschlüsselt ergibt sich der Gehe
           ${solved ? `
             <div class="solved-banner">◈ Rätsel gelöst ◈</div>
             <div class="next-hint">${s.nächster_ort ? 'Nächste Station: ' + s.nächster_ort : 'Du hast alle Rätsel gelöst!'}</div>
+            <div class="riddle-box" style="margin-top:16px;opacity:0.7">
+              <div class="riddle-text">${s.rätseltext}</div>
+            </div>
           ` : `
             <div class="riddle-box">
               <div class="riddle-text">${s.rätseltext}</div>
