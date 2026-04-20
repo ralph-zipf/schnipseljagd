@@ -26,6 +26,10 @@
       --r:          12px;
     }
 
+    /* Verhindert Zoom bei Doppeltap und Input-Zoom auf iOS */
+    input, button { font-size: max(16px, 1em); }
+    html { -webkit-text-size-adjust: 100%; }
+
     /* ── RESET + BASE ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { height: 100%; }
@@ -35,6 +39,7 @@
       font-family: var(--font-body);
       font-size: 16px;
       min-height: 100%;
+      -webkit-overflow-scrolling: touch;
       background-image:
         radial-gradient(ellipse at 25% 15%, rgba(100,50,180,0.13) 0%, transparent 55%),
         radial-gradient(ellipse at 75% 85%, rgba(0,140,170,0.07) 0%, transparent 50%);
