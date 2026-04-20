@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    background: #07070f;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh; margin: 0; gap: 20px;
+    background-image:
+      radial-gradient(ellipse at 25% 15%, rgba(100,50,180,0.15) 0%, transparent 55%),
+      radial-gradient(ellipse at 75% 85%, rgba(0,140,170,0.09) 0%, transparent 50%);
+  }
+  .label { font-family: Georgia, serif; font-size: 9px; letter-spacing: 3px; color: #3a2a58; text-transform: uppercase; }
+  .coin-stage {
+    position: relative; width: 260px; height: 260px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(100,55,200,0.25),
+      0 0 22px 4px rgba(120,50,220,0.45),
+      0 0 55px 12px rgba(80,25,170,0.2);
+  }
+</style>
+</head>
+<body>
+<div class="label">◈ 5 Schnipsel · 1 Geheimnis ◈</div>
+<div class="coin-stage">
+<!--
+  PNG-Messung: 2380×1290px, Münzmitte bei (1189,644), Radius≈644px
+  Mapping auf SVG viewBox 200×200, Münzkreis bei (100,100) r=97:
+  scale = 97/644 = 0.1506
+  image width  = 2380 × 0.1506 = 358
+  image height = 1290 × 0.1506 = 194
+  x = 100 − 1189×0.1506 = −79
+  y = 100 − 644×0.1506  =   3
+-->
+<svg viewBox="0 0 200 200" width="260" height="260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Kreisförmige Außen-Begrenzung für alle Scherben -->
+    <clipPath id="coinCircle">
+      <circle cx="100" cy="100" r="96"/>
+    </clipPath>
+
+    <!-- Arcane Gold-Filter: Silber → warmes Bronze/Gold, hoher Kontrast -->
+    <filter id="arcane" color-interpolation-filters="sRGB"
+            x="-5%" y="-5%" width="110%" height="110%">
+      <!-- 1. Zu Graustufen konvertieren -->
+      <feColorMatrix type="saturate" values="0" result="gray"/>
+      <!-- 2. Tiefer Kontrast: Schatten werden sehr dunkel -->
+      <feComponentTransfer in="gray" result="contrast">
+        <feFuncR type="linear" slope="1.5" intercept="-0.2"/>
+        <feFuncG type="linear" slope="1.5" intercept="-0.2"/>
+        <feFuncB type="linear" slope="1.5" intercept="-0.2"/>
+      </feComponentTransfer>
+      <!-- 3. Dunkles Bronze/Kupfer – Arcane-typisch gedämpft -->
+      <feColorMatrix in="contrast" type="matrix" result="gold"
+        values="0.78 0    0    0   0
+                0.44 0    0    0   0
+                0.08 0    0    0   0
+                0    0    0    1   0"/>
+    </filter>
+
+    <!-- Vignette: nur ganz am Rand, damit der Münzrand nicht zu dunkel wird -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="50%">
+      <stop offset="75%" stop-color="transparent"/>
+      <stop offset="92%" stop-color="rgba(8,4,20,0.35)"/>
+      <stop offset="100%" stop-color="rgba(4,2,14,0.65)"/>
+    </radialGradient>
+
+    <!-- Glow-Filter für Risslinien -->
+    <filter id="crackGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Rim-Textpfad (einmal definiert, von allen Scherben genutzt) -->
+    <path id="rimPath" d="M 16,100 A 84,84 0 1,1 184,100"/>
+
+    <!-- ── SCHERBEN-CLIP-PFADE (originale Polygon-Punkte) ── -->
+    <clipPath id="cp1"><polygon points="98,94 82,4 0,0 0,200 10,150 30,165 60,183"/></clipPath>
+    <clipPath id="cp2"><polygon points="98,94 82,4 128,2 178,38 148,60"/></clipPath>
+    <clipPath id="cp3"><polygon points="98,94 148,60 178,38 200,0 200,200 192,132 157,114"/></clipPath>
+    <clipPath id="cp4"><polygon points="98,94 157,114 192,132 200,200 114,196 90,152"/></clipPath>
+    <clipPath id="cp5"><polygon points="98,94 90,152 114,196 0,200 10,150 30,165 60,183"/></clipPath>
+  </defs>
+
+  <!-- ── ALLE 5 SCHERBEN (innerhalb Münzkreis, dann Scherbenpfad) ── -->
+  <g clip-path="url(#coinCircle)">
+
+    <!-- Scherbe 1 – links -->
+    <g clip-path="url(#cp1)">
+      <image href="coin.png"
+             x="-79" y="3" width="358" height="194"
+             filter="url(#arcane)" preserveAspectRatio="xMidYMid meet"/>
+      <!-- Lila Arcane-Überlagerung für Scherbenrand-Glimmen -->
+      <polygon points="98,94 82,4 0,0 0,200 10,150 30,165 60,183"
+               fill="none" stroke="rgba(160,90,255,0.35)" stroke-width="1.5"/>
+    </g>
+
+    <!-- Scherbe 2 – oben-mitte -->
+    <g clip-path="url(#cp2)">
+      <image href="coin.png"
+             x="-79" y="3" width="358" height="194"
+             filter="url(#arcane)" preserveAspectRatio="xMidYMid meet"/>
+      <polygon points="98,94 82,4 128,2 178,38 148,60"
+               fill="none" stroke="rgba(160,90,255,0.35)" stroke-width="1.5"/>
+    </g>
+
+    <!-- Scherbe 3 – rechts -->
+    <g clip-path="url(#cp3)">
+      <image href="coin.png"
+             x="-79" y="3" width="358" height="194"
+             filter="url(#arcane)" preserveAspectRatio="xMidYMid meet"/>
+      <polygon points="98,94 148,60 178,38 200,0 200,200 192,132 157,114"
+               fill="none" stroke="rgba(160,90,255,0.35)" stroke-width="1.5"/>
+    </g>
+
+    <!-- Scherbe 4 – unten-rechts -->
+    <g clip-path="url(#cp4)">
+      <image href="coin.png"
+             x="-79" y="3" width="358" height="194"
+             filter="url(#arcane)" preserveAspectRatio="xMidYMid meet"/>
+      <polygon points="98,94 157,114 192,132 200,200 114,196 90,152"
+               fill="none" stroke="rgba(160,90,255,0.35)" stroke-width="1.5"/>
+    </g>
+
+    <!-- Scherbe 5 – unten-links -->
+    <g clip-path="url(#cp5)">
+      <image href="coin.png"
+             x="-79" y="3" width="358" height="194"
+             filter="url(#arcane)" preserveAspectRatio="xMidYMid meet"/>
+      <polygon points="98,94 90,152 114,196 0,200 10,150 30,165 60,183"
+               fill="none" stroke="rgba(160,90,255,0.35)" stroke-width="1.5"/>
+    </g>
+
+  </g><!-- end coinCircle clip -->
+
+  <!-- ── RISSLINIEN (gebrochen/zackig) ── -->
+  <g clip-path="url(#coinCircle)">
+    <!-- Dunkle Hauptrisse -->
+    <g stroke="#060610" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="98,94 96,80 100,65 89,50 93,36 84,20 82,4"/>
+      <polyline points="98,94 115,83 124,73 141,62 150,52 165,44 178,38"/>
+      <polyline points="98,94 117,99 128,106 145,108 162,118 176,127 192,132"/>
+      <polyline points="98,94 106,110 105,128 111,143 108,161 114,180 114,196"/>
+      <polyline points="98,94 79,103 66,110 49,122 36,130 20,142 10,150"/>
+    </g>
+    <!-- Lila Glow-Risse -->
+    <g stroke="rgba(145,65,235,0.65)" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#crackGlow)">
+      <polyline points="98,94 96,80 100,65 89,50 93,36 84,20 82,4"/>
+      <polyline points="98,94 115,83 124,73 141,62 150,52 165,44 178,38"/>
+      <polyline points="98,94 117,99 128,106 145,108 162,118 176,127 192,132"/>
+      <polyline points="98,94 106,110 105,128 111,143 108,161 114,180 114,196"/>
+      <polyline points="98,94 79,103 66,110 49,122 36,130 20,142 10,150"/>
+    </g>
+    <!-- Mittelpunkt-Leuchten -->
+    <circle cx="98" cy="94" r="3" fill="rgba(180,100,255,0.75)" filter="url(#crackGlow)"/>
+  </g>
+
+  <!-- Vignette für Tiefe (nur subtil am Rand) -->
+  <circle cx="100" cy="100" r="96" fill="url(#vignette)" clip-path="url(#coinCircle)"/>
+
+  <!-- Subtiler Innenrand -->
+  <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(100,60,180,0.25)" stroke-width="0.8"/>
+</svg>
+</div>
+<div style="font-family:Georgia,serif; font-size:10px; color:#3a2a58; letter-spacing:2px; margin-top:10px;">
+  VOLLSTÄNDIGE MÜNZE · ARCANE-STIL
+</div>
+</body>
+</html>
